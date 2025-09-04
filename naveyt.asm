@@ -1,5 +1,8 @@
 org	$8000
 
+;----------------------   C O N S T A N T E S   ---------------------------
+NAVE_Y	equ	$50
+
 ;==========================================================================
 ;---			C O M I E N Z O   P R O G R A M A		---
 ;---									---
@@ -7,6 +10,7 @@ org	$8000
 ;--------------------------------------------------------------------------
 call	sub_cls
 call 	sub_cls_attr
+call	sub_attr_generales
 
 ;==========================================================================
 ;---                                                                    ---
@@ -14,7 +18,10 @@ call 	sub_cls_attr
 ;---                                                                    ---
 ;==========================================================================
 bucle_principal:
+	call	leer_teclado
 	call 	dibuja_nave
+	halt
+	halt
 	
 jr	bucle_principal
 jr	$
@@ -30,29 +37,46 @@ jr	$
 ;---  DE---> Puntero direcciones Sprite ...  				---
 ;==========================================================================
 dibuja_nave:
-	ld	hl,$4000
+	ld	a,NAVE_Y
+	ld	h,a
+	ld	a,(nave_x)
+	ld	l,a
+
 	ld	de,sprites
 
 	ld	b,$10
 
 	bucle_dibuja_nave:
-	ld	a,(de)
-	ld	(hl),a
+		dec	l
 
-	inc	l
-	inc	de
+		ld	a,0
+		ld	(hl),a
 
-	ld	a,(de)
-	ld	(hl),a
+		inc	l
 
-	dec	l
+		ld	a,(de)
+		ld	(hl),a
 
-	call	check_next_fila
+		inc	l
+		inc	de
 
-	inc	de
+		ld	a,(de)
+		ld	(hl),a
+
+		inc	l
+
+		ld	a,0
+		ld	(hl),a
+
+		dec	l
+		dec	l
+
+		call	check_next_fila
+
+		inc	de
 	
-	djnz	bucle_dibuja_nave
-	ret
+		djnz	bucle_dibuja_nave
+		ret
 
 check_next_fila:
 	ld	a,h
@@ -76,28 +100,75 @@ check_next_fila:
 ;===========================================================================
 ;---                    SUB - L E E R   T E C L A D O                    ---
 ;---                                                                     ---  
-;---         Izquierda --------> 'Z' o Cursor JoyStick Izquierda         	---
+;---         Izquierda --------> 'Z' o Cursor JoyStick Izquierda         ---
 ;---         Derecha ----------> 'X' o Cursor JoyStick Derecha           ---
 ;---         Disparo ----------> 'Spc' o Cursor JoyStick Arriba          ---
 ;---------------------------------------------------------------------------
+leer_teclado:
+	ld	a,$7f
+	in	a,($fe)
+	bit	3,a
+	jr	nz, tecla_m
+	
+	;-----------------------------------------------------
+	; Si llega hasta aqui, hemos pulsado Izquierda
+	;-----------------------------------------------------
+	ld	a,(nave_x)
+	dec	a
+	ld	(nave_x),a	
+	ret
 
+	tecla_m:
+		ld	a,$7f
+		in	a,($fe)
+		bit	2,a
+		ret	nz
+
+		;-----------------------------------------------------
+		; Si llega hasta aqui, hemos pulsado Derecha
+		;-----------------------------------------------------
+		ld	a,(nave_x)
+		inc	a
+		ld	(nave_x),a
+		ret
 
 ;===========================================================================
 ;---                    S U B - ATRIBUTOS GENERALES                      ---
 ;---------------------------------------------------------------------------
+sub_attr_generales:
+	ld	hl,$5aa0
+	ld	b,$20
 
+bucle_attr_generales:
+	ld	a,%00000010
+	ld	(hl),a
+
+	ld	a,l
+	add	a,$20
+	ld	l,a
+
+	ld	a,%00000101
+	ld	(hl),a
+
+	ld	a,l
+	sub	$20
+	ld	l,a
+
+	inc	l
+	djnz	bucle_attr_generales
+	ret
 
 ;===========================================================================
 ;---                    S U B - C L S  ATRIBUTOS                         ---
 ;---------------------------------------------------------------------------
 sub_cls_attr:
 
-; flash 0 ----- bit 0
-; bright 0 ---- bit 1
-; paper 1  ---- bits 2,3,4
-; ink 6 ------- bits 5,6,7
+; flash 0 ----- bit 7
+; bright 0 ---- bit 6
+; paper 1  ---- bits 5,4,3
+; ink 6 ------- bits 2,1,0
 
-	ld	a,%00001110
+	ld	a,%00000100
 	ld	hl,$5800
 	ld	(hl),a
 	ld	de,$5801
@@ -131,6 +202,8 @@ DEFB	246,111,230,103,224,  7, 64,  2
 ;-----------------------------------------------------------------------------
 ;---		    V A R I A B L E S  en  M E M O R I A                   ---
 ;-----------------------------------------------------------------------------
+nave_x	defb	$af	; Posicion X de la nave (l de hl)
 
+;------------------------------------------------------------------------------
 end	$8000
 
