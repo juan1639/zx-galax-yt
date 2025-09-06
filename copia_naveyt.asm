@@ -1,9 +1,7 @@
 org	$8000
 
 ;----------------------   C O N S T A N T E S   ---------------------------
-NAVE_Y		equ	$50
-LIMITE_IZ	equ	$a0
-LIMITE_DE	equ	$be
+NAVE_Y	equ	$50
 
 ;==========================================================================
 ;---			C O M I E N Z O   P R O G R A M A		---
@@ -118,9 +116,6 @@ leer_teclado:
 	; Si llega hasta aqui, hemos pulsado Izquierda
 	;-----------------------------------------------------
 	ld	a,(nave_x)
-	cp	LIMITE_IZ
-	ret	z
-	
 	dec	a
 	ld	(nave_x),a	
 	ret
@@ -135,9 +130,6 @@ leer_teclado:
 		; Si llega hasta aqui, hemos pulsado Derecha
 		;-----------------------------------------------------
 		ld	a,(nave_x)
-		cp	LIMITE_DE
-		ret	z
-
 		inc	a
 		ld	(nave_x),a
 		ret
@@ -150,7 +142,7 @@ leer_teclado:
 ;---------------------------------------------------------------------------
 espacio:
 	ld	de,estrellas	; Situar DE en direccion 'estrellas'
-	ld	b,$24		; Bucle de 36 estrellas ($24)
+	ld	b,$24		; Bucle $24 estrellas
 
 bucle_estrellas:
 	ld	a,(de)
@@ -160,26 +152,42 @@ bucle_estrellas:
 	ld	l,a
 	ld	(hl),$00	; Borrar estrella
 
-	call	next_scan
-	call	check_limite
+	call 	next_scan	; Sub Next-Scan (calculando tb Linea y Tercio)
+	call	check_limite	; Sub Scroll (estrella ha terminado su recorrido)
 
 	inc	de
 	ld	a,(de)
-	ld	(hl),a		; Dibujar estrella en nueva posicion (+1 scan abajo)
+	ld	(hl),a	; Dibuja estrella (direccion DE contiene cual estrella)
 
 	dec	de
 	ld	a,l
 	ld	(de),a
-
 	dec	de
 	ld	a,h
-	ld	(de),a		; Actualizar la nueva PosXY en hl
+	ld	(de),a		; Actualiza la nueva HL en direcciones DE
 
 	inc	de
 	inc	de
 	inc 	de
 
-	djnz	bucle_estrellas
+	djnz 	bucle_estrellas
+	ret
+
+;----------------------------------------------------------------
+;	Checkea el limite bajo (un hipotetico 4to tercio)
+;----------------------------------------------------------------
+check_limite:
+	ld	a,h
+	cp	%01011000	; Hipotetico 4to Tercio?
+	ret	nz		; No? retorna y la estrella sigue...
+
+	ld	h,%01000000	; Reinicia H
+	res	7,l
+	res	6,l
+	res	5,l		; 000C CCCC, Reinicia Linea a 0
+	ld	a,l
+	add	a,$0e		; Cambia la C CCCC tb...
+	ld	l,a		
 	ret
 
 ;---------------------------------------------------------------------------
@@ -189,43 +197,21 @@ bucle_estrellas:
 ;---            ...cuenta el posible cambio de Caracter o Tercio)        ---
 ;---------------------------------------------------------------------------
 next_scan:
-	inc	h		; Incrementamos h (scanline)
+inc	h
+ld	a,h		; 010T TSSS
+and	$07		; 0000 0111
+ret	nz		; NZ hemos terminado, ret
 
-	ld	a,h	; 010T TSSS FFFC CCCC | (hl) | $4000 | 01000000 00000000
+ld	a,l		; LLLC CCCC
+add	a,$20		; 0010 0000
+ld	l,a
+ret	c		; Carry=1, entonces cambio de tercio y ret
 
-	and	%00000111	; check si hemos alcanzado el supuesto scan 8
-	ret	nz		; Si es antes del scanline 7, hemos terminado...
+ld	a,h		; 010T '1'000 
+sub	$08		; 010T '1'000
+ld	h,a
 
-	;------------   Checkear tercio   -------------
-	ld	a,l		; FFFC CCCC
-	add	a,$20		; 0010 0000
-	ld	l,a
-	ret	c		; Carry=1 ... entonces cambio de Tercio y ret
-
-	;------------   Siguiente Fila    -------------
-	ld	a,h	; 0100 1000 restamos 0000 1000 = 0100 0000
-	sub	$08
-	ld	h,a
-	ret
-
-;----------------------------------------------------------------
-;	Checkea el limite bajo (un hipotetico 4to tercio)
-;----------------------------------------------------------------
-check_limite:
-	ld	a,h
-	;cp	%01011000	; Check hipotetico 4to Tercio
-	and	%00011000
-	cp	%00011000
-	ret	nz
-
-	ld	h,%01000000	; Carga en h $4000
-	res	7,l
-	res	6,l
-	res	5,l		; l = FFFC CCCC
-	ld	a,l
-	add	a,$0e
-	ld	l,a
-	ret
+ret
 
 ;===========================================================================
 ;---                    S U B - ATRIBUTOS POR ZONAS                      ---
