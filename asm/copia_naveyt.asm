@@ -1,7 +1,9 @@
 org	$8000
 
 ;----------------------   C O N S T A N T E S   ---------------------------
-NAVE_Y	equ	$50
+NAVE_Y		equ	$50
+LIMITE_IZ	equ	$a0
+LIMITE_DE	equ	$be
 
 ;==========================================================================
 ;---			C O M I E N Z O   P R O G R A M A		---
@@ -19,9 +21,10 @@ call	sub_attr_zonas
 ;---                                                                    ---
 ;==========================================================================
 bucle_principal:
-	call	espacio
+	;call	espacio
 	call	leer_teclado
 	call 	dibuja_nave
+	call	disparo
 	halt
 	halt			; A mas cantidad de halts... mas lento
 	
@@ -102,37 +105,127 @@ check_next_fila:
 ;===========================================================================
 ;---                    SUB - L E E R   T E C L A D O                    ---
 ;---                                                                     ---  
-;---         Izquierda --------> 'Z' o Cursor JoyStick Izquierda         ---
-;---         Derecha ----------> 'X' o Cursor JoyStick Derecha           ---
-;---         Disparo ----------> 'Spc' o Cursor JoyStick Arriba          ---
+;---         Izquierda --------> '5' o Cursor JoyStick Izquierda         ---
+;---         Derecha ----------> '8' o Cursor JoyStick Derecha           ---
+;---         Disparo ----------> 'Spc'                                   ---
+;---    Las teclas 5 y 8 coinciden con los cursores IZ y DE y con ...    ---
+;---    ... un Joystick tipo Cursor-Joystick                             --- 
 ;---------------------------------------------------------------------------
 leer_teclado:
-	ld	a,$7f
-	in	a,($fe)
-	bit	3,a
-	jr	nz, tecla_m
+	ld	a,$7f			;Carg en A, puerto $f7 (SPC ... B)
+	in	a,($fe)			;Lee (In A) el puerto entrada $fe
+	bit	0,a			;Comprobamos estado del Bit0 (Tecla SPC)
+	jr 	nz,tecla_iz		;NZ = '5' No pulsada, salta a la siguiente...
+	jr	inicia_el_disparo
 	
-	;-----------------------------------------------------
-	; Si llega hasta aqui, hemos pulsado Izquierda
-	;-----------------------------------------------------
-	ld	a,(nave_x)
-	dec	a
-	ld	(nave_x),a	
-	ret
-
-	tecla_m:
-		ld	a,$7f
+	tecla_iz:
+		ld	a,$f7
 		in	a,($fe)
-		bit	2,a
+		bit	4,a		; Bit 4 es la tecla 'Cursor IZ'
+		jr	nz, tecla_de
+	
+		;-----------------------------------------------------
+		; Si llega hasta aqui, hemos pulsado Izquierda
+		;-----------------------------------------------------
+		ld	a,(nave_x)
+		cp	LIMITE_IZ
+		ret	z
+	
+		dec	a
+		ld	(nave_x),a	
+		ret
+
+	tecla_de:
+		ld	a,$ef
+		in	a,($fe)
+		bit	2,a	; Bit 2 es la tecla 'Cursor DE'
 		ret	nz
 
 		;-----------------------------------------------------
 		; Si llega hasta aqui, hemos pulsado Derecha
 		;-----------------------------------------------------
 		ld	a,(nave_x)
+		cp	LIMITE_DE
+		ret	z
+
 		inc	a
 		ld	(nave_x),a
 		ret
+
+;===========================================================================
+;		  I N I C I A   E L   D I S P A R O
+;---------------------------------------------------------------------------
+inicia_el_disparo:
+	ld	a,(settings)
+	bit	0,a
+	ret	nz
+
+	set	0,a
+	ld	(settings),a
+
+	ld	a,NAVE_Y
+	ld	h,a
+	ld	(disparo_y),a
+
+	ld	a,(nave_x)
+	sub	$20
+	ld	l,a
+	ld	(disparo_x),a
+
+	ld	b,$08
+
+bucle_disparo_inicial:
+	ld	(hl),$01
+	inc	h
+	djnz	bucle_disparo_inicial
+
+	ret
+
+;===========================================================================
+;---             R E C O R R I D O   D E L   D I S P A R O               ---
+;---                                                                     ---
+;---------------------------------------------------------------------------
+disparo:
+	ld	a,(settings)
+	bit	0,a
+	ret	z
+
+	;----------------------------
+	; Borra disparo
+	;----------------------------
+	ld	a,(disparo_y)		; coorY a borrar (vieja)
+	ld	h,a
+	ld	a,(disparo_x)		; coorX a borrar (vieja)
+	ld	l,a
+
+	ld	b,$08
+
+bucle_borra_disparo:
+	ld	(hl),$00
+	inc	h
+	djnz	bucle_borra_disparo
+
+	;----------------------------
+	; Dibuja disparo
+	;----------------------------
+	ld	a,h
+	sub	$08
+	ld	h,a
+	ld	(disparo_y),a	; actualizamos la nueva coorY disparo
+
+	ld	a,l
+	sub	$20
+	ld	l,a
+	ld	(disparo_x),a	; actualizamos la nueva coorX disparo
+
+	ld	b,$08
+
+bucle_dibuja_disparo:
+	ld	(hl),$01
+	inc	h
+	djnz	bucle_dibuja_disparo
+
+	ret
 
 ;===========================================================================
 ;---                  E S P A C I O   E S T R E L L A S                  ---
@@ -142,7 +235,7 @@ leer_teclado:
 ;---------------------------------------------------------------------------
 espacio:
 	ld	de,estrellas	; Situar DE en direccion 'estrellas'
-	ld	b,$24		; Bucle $24 estrellas
+	ld	b,$24		; Bucle de 36 estrellas ($24)
 
 bucle_estrellas:
 	ld	a,(de)
@@ -152,42 +245,26 @@ bucle_estrellas:
 	ld	l,a
 	ld	(hl),$00	; Borrar estrella
 
-	call 	next_scan	; Sub Next-Scan (calculando tb Linea y Tercio)
-	call	check_limite	; Sub Scroll (estrella ha terminado su recorrido)
+	call	next_scan
+	call	check_limite
 
 	inc	de
 	ld	a,(de)
-	ld	(hl),a	; Dibuja estrella (direccion DE contiene cual estrella)
+	ld	(hl),a		; Dibujar estrella en nueva posicion (+1 scan abajo)
 
 	dec	de
 	ld	a,l
 	ld	(de),a
+
 	dec	de
 	ld	a,h
-	ld	(de),a		; Actualiza la nueva HL en direcciones DE
+	ld	(de),a		; Actualizar la nueva PosXY en hl
 
 	inc	de
 	inc	de
 	inc 	de
 
-	djnz 	bucle_estrellas
-	ret
-
-;----------------------------------------------------------------
-;	Checkea el limite bajo (un hipotetico 4to tercio)
-;----------------------------------------------------------------
-check_limite:
-	ld	a,h
-	cp	%01011000	; Hipotetico 4to Tercio?
-	ret	nz		; No? retorna y la estrella sigue...
-
-	ld	h,%01000000	; Reinicia H
-	res	7,l
-	res	6,l
-	res	5,l		; 000C CCCC, Reinicia Linea a 0
-	ld	a,l
-	add	a,$0e		; Cambia la C CCCC tb...
-	ld	l,a		
+	djnz	bucle_estrellas
 	ret
 
 ;---------------------------------------------------------------------------
@@ -197,21 +274,43 @@ check_limite:
 ;---            ...cuenta el posible cambio de Caracter o Tercio)        ---
 ;---------------------------------------------------------------------------
 next_scan:
-inc	h
-ld	a,h		; 010T TSSS
-and	$07		; 0000 0111
-ret	nz		; NZ hemos terminado, ret
+	inc	h		; Incrementamos h (scanline)
 
-ld	a,l		; LLLC CCCC
-add	a,$20		; 0010 0000
-ld	l,a
-ret	c		; Carry=1, entonces cambio de tercio y ret
+	ld	a,h	; 010T TSSS FFFC CCCC | (hl) | $4000 | 01000000 00000000
 
-ld	a,h		; 010T '1'000 
-sub	$08		; 010T '1'000
-ld	h,a
+	and	%00000111	; check si hemos alcanzado el supuesto scan 8
+	ret	nz		; Si es antes del scanline 7, hemos terminado...
 
-ret
+	;------------   Checkear tercio   -------------
+	ld	a,l		; FFFC CCCC
+	add	a,$20		; 0010 0000
+	ld	l,a
+	ret	c		; Carry=1 ... entonces cambio de Tercio y ret
+
+	;------------   Siguiente Fila    -------------
+	ld	a,h	; 0100 1000 restamos 0000 1000 = 0100 0000
+	sub	$08
+	ld	h,a
+	ret
+
+;----------------------------------------------------------------
+;	Checkea el limite bajo (un hipotetico 4to tercio)
+;----------------------------------------------------------------
+check_limite:
+	ld	a,h
+	;cp	%01011000	; Check hipotetico 4to Tercio
+	and	%00011000
+	cp	%00011000
+	ret	nz
+
+	ld	h,%01000000	; Carga en h $4000
+	res	7,l
+	res	6,l
+	res	5,l		; l = FFFC CCCC
+	ld	a,l
+	add	a,$0e
+	ld	l,a
+	ret
 
 ;===========================================================================
 ;---                    S U B - ATRIBUTOS POR ZONAS                      ---
@@ -318,7 +417,16 @@ defb	$4e,$87,128,$47,$68,16,$45,$72,32,$42,$91,64,$55,$0b,8,$57,$2c,32
 ;-----------------------------------------------------------------------------
 ;---		    V A R I A B L E S  en  M E M O R I A                   ---
 ;-----------------------------------------------------------------------------
-nave_x	defb	$af	; Posicion X de la nave (l de hl)
+nave_x		defb	$af	; Posicion X de la nave (l de hl)
+; nave_y (es constante, ya que la nave solo se mueve en horizontal)
+
+disparo_y	defb	$50	; Posicion X del disparo
+disparo_x	defb	$8f	; Posicion Y del disparo
+
+settings	defb	$00	; Bits (flags) de diferentes estados, bits utilizados:
+
+; Bit 0 ... 0=Disparo permitido		| 1=Disparo NO permitido
+; Bit 1 ...
 
 ;------------------------------------------------------------------------------
 end	$8000

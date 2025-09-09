@@ -7,6 +7,8 @@
 
 
 <img src="miniatura-galaxJon-1.png" />
+La fuente de texto fue dibujada por Javier Vispe.
+
 
 
 

@@ -21,9 +21,10 @@ call	sub_attr_zonas
 ;---                                                                    ---
 ;==========================================================================
 bucle_principal:
-	call	espacio
+	;call	espacio
 	call	leer_teclado
 	call 	dibuja_nave
+	call	disparo
 	halt
 	halt			; A mas cantidad de halts... mas lento
 	
@@ -104,15 +105,26 @@ check_next_fila:
 ;===========================================================================
 ;---                    SUB - L E E R   T E C L A D O                    ---
 ;---                                                                     ---  
-;---         Izquierda --------> 'Z' o Cursor JoyStick Izquierda         ---
-;---         Derecha ----------> 'X' o Cursor JoyStick Derecha           ---
-;---         Disparo ----------> 'Spc' o Cursor JoyStick Arriba          ---
+;---         Izquierda --------> '5' o Cursor JoyStick Izquierda         ---
+;---         Derecha ----------> '8' o Cursor JoyStick Derecha           ---
+;---         Disparo ----------> 'Spc'                                   ---
+;---                                                                     ---
+;---    Las teclas 5 y 8 coinciden con los cursores IZ y DE y con ...    ---
+;---    ... un Joystick tipo Cursor-Joystick                             ---   
 ;---------------------------------------------------------------------------
 leer_teclado:
-	ld	a,$7f
-	in	a,($fe)
-	bit	3,a
-	jr	nz, tecla_m
+	ld	a,$7f		; Carg en A, puerto $7f (Semifila SPC...B)
+	in	a,($fe)		; Lee (in a) el puerto de entrada $fe
+	bit	0,a		; Bit 4 es la tecla 'SPC'
+	jr	nz, tecla_iz	; NO pulsada... salta a la siguiente...
+	
+	jr	inicia_el_disparo
+	
+	tecla_iz:
+	ld	a,$f7		; Carg en A, puerto $f7 (Semifila 1...5)
+	in	a,($fe)		; Lee (in a) el puerto de entrada $fe
+	bit	4,a		; Bit 4 es la tecla 'Cursor IZ'
+	jr	nz, tecla_de	; NO pulsada... salta a la siguiente...
 	
 	;-----------------------------------------------------
 	; Si llega hasta aqui, hemos pulsado Izquierda
@@ -125,11 +137,11 @@ leer_teclado:
 	ld	(nave_x),a	
 	ret
 
-	tecla_m:
-		ld	a,$7f
-		in	a,($fe)
-		bit	2,a
-		ret	nz
+	tecla_de:
+		ld	a,$ef		; Carg en A, puerto $ef (Semifila 0...6)
+		in	a,($fe)		; Lee (in a) el puerto de entrada $fe
+		bit	2,a		; Bit 2 es la tecla 'Cursor DE'
+		ret	nz		; Ya se retorna si NO se pulsado ninguna tecla...
 
 		;-----------------------------------------------------
 		; Si llega hasta aqui, hemos pulsado Derecha
@@ -141,6 +153,80 @@ leer_teclado:
 		inc	a
 		ld	(nave_x),a
 		ret
+
+;===========================================================================
+;		  I N I C I A   E L   D I S P A R O
+;---------------------------------------------------------------------------
+inicia_el_disparo:
+	ld	a,(settings)
+	bit	0,a
+	ret	nz
+
+	set	0,a	; Ponemos el Bit0 a 1 (Para NO permitir mas disparos)
+	ld	(settings),a
+
+	ld	a,NAVE_Y
+	ld	h,a
+	ld	(disparo_y),a
+
+	ld	a,(nave_x)
+	sub	$20
+	ld	l,a
+	ld	(disparo_x),a
+
+	ld	b,$08
+
+bucle_disparo_inicial:
+	ld	(hl),$01	; 0000 0001
+	inc	h
+	djnz	bucle_disparo_inicial
+
+	ret
+
+;===========================================================================
+;		  R E C O R R I D O   D E L   D I S P A R O
+;---------------------------------------------------------------------------
+disparo:
+	ld	a,(settings)
+	bit	0,a
+	ret	z
+
+	;-------------------------------
+	; Borra disparo
+	;-------------------------------
+	ld	a,(disparo_y)	; Borrar CoorY (vieja)
+	ld	h,a
+	ld	a,(disparo_x)	; Borrar CoorX (vieja)
+	ld	l,a
+	
+	ld	b,$08
+
+bucle_borra_disparo:
+	ld	(hl),$00
+	inc	h
+	djnz	bucle_borra_disparo
+
+	;-------------------------------
+	; Dibuja disparo
+	;-------------------------------
+	ld	a,h
+	sub	$08
+	ld	h,a
+	ld	(disparo_y),a
+
+	ld	a,l
+	sub	$20
+	ld	l,a
+	ld	(disparo_x),a
+
+	ld	b,$08
+
+bucle_dibuja_disparo:
+	ld	(hl),$01
+	inc	h
+	djnz	bucle_dibuja_disparo
+	
+	ret
 
 ;===========================================================================
 ;---                  E S P A C I O   E S T R E L L A S                  ---
@@ -332,7 +418,16 @@ defb	$4e,$87,128,$47,$68,16,$45,$72,32,$42,$91,64,$55,$0b,8,$57,$2c,32
 ;-----------------------------------------------------------------------------
 ;---		    V A R I A B L E S  en  M E M O R I A                   ---
 ;-----------------------------------------------------------------------------
-nave_x	defb	$af	; Posicion X de la nave (l de hl)
+nave_x		defb	$af	; Posicion X de la nave (l de hl)
+; NAVE_Y esta declarada como constante (porque solo se mueve en horizontal)
+
+disparo_x	defb	$8f	; Posicion X del disparo (l de hl)
+disparo_y	defb	$50	; Posicion Y del disparo (h de hl)
+
+settings	defb	$00	; Bits (flags) de los diferentes estados. Bits utilizados:
+
+; Bit 0 ... 0=Disparo permitido		| 1=Disparo NO permitido (0110 1001)
+; Bit 1
 
 ;------------------------------------------------------------------------------
 end	$8000
