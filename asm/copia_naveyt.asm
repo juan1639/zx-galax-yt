@@ -21,10 +21,10 @@ call	sub_attr_zonas
 ;---                                                                    ---
 ;==========================================================================
 bucle_principal:
-	;call	espacio
+	call	espacio
+	call	disparo
 	call	leer_teclado
 	call 	dibuja_nave
-	call	disparo
 	halt
 	halt			; A mas cantidad de halts... mas lento
 	
@@ -213,19 +213,52 @@ bucle_borra_disparo:
 	ld	h,a
 	ld	(disparo_y),a	; actualizamos la nueva coorY disparo
 
-	ld	a,l
-	sub	$20
-	ld	l,a
-	ld	(disparo_x),a	; actualizamos la nueva coorX disparo
-
+	call	check_tercio_anterior
+	ld	a,h
+	cp	$38
+	jr 	z, desactivar_disparo	; FIN del disparo (fin del 1er tercio)
+	
 	ld	b,$08
 
 bucle_dibuja_disparo:
 	ld	(hl),$01
 	inc	h
 	djnz	bucle_dibuja_disparo
-
 	ret
+
+desactivar_disparo:
+	ld	a,(settings)
+	res	0,a
+	ld	(settings),a
+	ret
+
+;---------------------------------------------------------------------------
+; 			   Check Tercio Anterior
+;---------------------------------------------------------------------------
+check_tercio_anterior:
+	ld	a,l
+	and	%11100000
+	jr	z, restar_tercio
+	
+	ld	a,l
+	sub	$20
+	ld	l,a
+	ld	(disparo_x),a	; actualizamos la nueva coorX disparo
+	
+	ret	;	Retornamos SIN restar tercio (normal)
+
+restar_tercio:
+	ld	a,l
+	add	a,$e0
+	ld	l,a
+	ld	(disparo_x),a	; actualizar a ultima fila del 'nuevo tercio'
+	
+	ld	a,h
+	sub	$08
+	ld	h,a
+	ld	(disparo_y),a	; Restamos 8 a h, obteniendo el 'nuevo tercio'
+
+	ret	;	Retornamos RESTANDO un tercio
 
 ;===========================================================================
 ;---                  E S P A C I O   E S T R E L L A S                  ---
