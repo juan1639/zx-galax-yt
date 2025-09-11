@@ -5,6 +5,9 @@ NAVE_Y		equ	$50
 LIMITE_IZ	equ	$a0
 LIMITE_DE	equ	$be
 
+beeper: 	equ 	$03b5	;Rutina Beeper (HL = Nota, DE = Duracion)...
+				;...( Altera Registros: AF,BC,DE,HL,IX )
+
 ;==========================================================================
 ;---			C O M I E N Z O   P R O G R A M A		---
 ;---									---
@@ -25,7 +28,6 @@ bucle_principal:
 	call	disparo
 	call	leer_teclado
 	call 	dibuja_nave
-	halt
 	halt			; A mas cantidad de halts... mas lento
 	
 jr	bucle_principal
@@ -179,6 +181,10 @@ bucle_disparo_inicial:
 	inc	h
 	djnz	bucle_disparo_inicial
 
+	;---------------------------------------
+	;ld	a,$04
+	;call	sonido
+
 	ret
 
 ;===========================================================================
@@ -193,11 +199,16 @@ disparo:
 	;----------------------------
 	; Borra disparo
 	;----------------------------
-	ld	a,(disparo_y)		; coorY a borrar (vieja)
-	ld	h,a
 	ld	a,(disparo_x)		; coorX a borrar (vieja)
 	ld	l,a
+	ld	a,(disparo_y)		; coorY a borrar (vieja)
+	ld	h,a
 
+	;------------ Sonido disparo ---------------
+	ld	a,$01	; 01 es el numero del sonido del disparo
+	call	sonido
+
+	;-------------------------------------------
 	ld	b,$08
 
 bucle_borra_disparo:
@@ -224,6 +235,7 @@ bucle_dibuja_disparo:
 	ld	(hl),$01
 	inc	h
 	djnz	bucle_dibuja_disparo
+
 	ret
 
 desactivar_disparo:
@@ -460,6 +472,9 @@ settings	defb	$00	; Bits (flags) de diferentes estados, bits utilizados:
 
 ; Bit 0 ... 0=Disparo permitido		| 1=Disparo NO permitido
 ; Bit 1 ...
+
+;------------------------------------------------------------------------------
+include "sonido.asm"
 
 ;------------------------------------------------------------------------------
 end	$8000
