@@ -29,7 +29,7 @@ bucle_principal:
 	call	leer_teclado
 	call 	dibuja_nave
 	call	mover_marcianos
-	;halt
+	halt
 	halt			; A mas cantidad de halts... mas lento
 	
 jr	bucle_principal
@@ -205,11 +205,12 @@ disparo_x	defb	$8f	; Posicion X del disparo (l de hl)
 
 settings	defb	$00	; Bits (flags) de los diferentes estados. Bits utilizados:
 
-; Bit 0 ... 0=Disparo permitido		| 1=Disparo NO permitido (0110 1001)
-; Bit 1
+; Bit 0 ... 0=Disparo permitido		| 1=Disparo NO permitido (0000 0001)
+; Bit 1 ... 0=Enemigos a la dcha.	| 1=Enemigos a la izda. 
 
 marciano_y	defb	$40	; CoorY del marciano (h de hl)
 marciano_x	defb	$20	; CoorX del marciano (l de hl)
+rota_marciano	defb	$01	; Rotacion actual del marciano
 
 include "sonido.asm"
 include "teclas.asm"
