@@ -39,6 +39,12 @@ disparo:
 		cp	$38
 		jr	z, desactivar_disparo	; FIN del disparo (fin 1er tercio)
 
+		;--------------------------------------
+		push	hl
+		call	check_impacto_marciano
+		pop	hl
+
+		;--------------------------------------
 		ld	b,$08
 
 	bucle_dibuja_disparo:
@@ -81,3 +87,15 @@ check_tercio_anterior:
 		ld	(disparo_y),a
 
 		ret		; Retornamos RESTANDO tercio
+
+;==================================================================
+; 		Check Si hemos hecho blanco en marciano
+;------------------------------------------------------------------
+check_impacto_marciano:
+	call	leer_atributos
+	
+	ld	a,(hl)
+	cp	%01000100	; es de color verde?
+
+	jr	z,$
+	ret

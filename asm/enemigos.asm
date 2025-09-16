@@ -66,6 +66,12 @@ bucle_todos_los_marcianos:
 	sub	$08
 	ld	h,a
 
+	;---------------------------------
+	push	hl
+	call	poner_atributos
+	pop	hl
+	
+	;---------------------------------
 	inc	l
 	inc	l
 	inc	l

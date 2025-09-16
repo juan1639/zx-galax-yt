@@ -29,7 +29,7 @@ bucle_principal:
 	call	leer_teclado
 	call 	dibuja_nave
 	call	mover_marcianos
-	halt
+	;halt
 	halt			; A mas cantidad de halts... mas lento
 	
 jr	bucle_principal
@@ -217,7 +217,8 @@ include "teclas.asm"
 include "jugador.asm"
 include "disparo.asm"
 include "estrellas.asm"
-include "enemigos.asm"
+include "enemigos2.asm"
+include "utils.asm"
 
 ;------------------------------------------------------------------------------
 end	$8000

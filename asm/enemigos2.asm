@@ -62,27 +62,17 @@ bucle_todos_los_marcianos:
 		inc	h
 		inc	de
 	djnz	bucle_dibuja_marciano
-
-		;------------------------------
-		; Attr Marciano
-		;------------------------------
-		;ld	hl,$5824
-		;ld	a,%01000100
-		;ld	(hl),a
-
-		;inc	l
-		;ld	a,%01000100
-		;ld	(hl),a
-
-		;inc	l
-		;ld	a,%01000100
-		;ld	(hl),a
-		;------------------------------
-
+		
 		ld	a,h
 		sub	$08
 		ld	h,a
-		
+
+		;------------------------------
+		push	hl
+		call	poner_atributos
+		pop	hl
+
+		;------------------------------
 		inc	l
 		inc	l
 		inc 	l
@@ -175,3 +165,4 @@ cambio_a_izquierda:
 	set	1,a
 	ld	(settings),a
 	ret
+
