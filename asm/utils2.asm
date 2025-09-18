@@ -1,5 +1,5 @@
 ;================================================
-;	Poner Atributos
+;	Poner Atributos (Marcianos)
 ;------------------------------------------------
 poner_atributos:
 	ld	a,h
@@ -25,15 +25,28 @@ attr_5a:
 	ld	h,$5a
 
 terminar_y_poner_attr:
-	ld	a,%01000100
+	;ld	a,%01001100	; Color verde brillante
+
+	ld	a,(hl)
+	cp	%01000011	; Es el atributo de esta posicion magenta brillante??
+	jr	z,$		; entonces de momento parar el programa
+
+	ld	a,(de)
 	ld	(hl),a
 
 	inc	l
+	inc	de
+
+	ld	a,(de)
 	ld	(hl),a
 
 	inc	l
+	inc	de
+
+	ld	a,(de)
 	ld	(hl),a
 
+	impacto_y_ret:
 	ret
 
 ;================================================
@@ -62,7 +75,19 @@ leer_attr_59:
 leer_attr_5a:
 	ld	h,$5a
 	ret
-
 jr	$
 
+;=================================================
+; Check si es attr verde brillante (Marciano)...
+; ... o si es attr negro (fondo, no hay marciano)
+;-------------------------------------------------
+check_si_hay_marciano:
+	jr	$
 
+
+
+
+
+
+
+	

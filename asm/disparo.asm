@@ -39,10 +39,14 @@ disparo:
 		cp	$38
 		jr	z, desactivar_disparo	; FIN del disparo (fin 1er tercio)
 
-		;--------------------------------------
-		push	hl
-		call	check_impacto_marciano
-		pop	hl
+		;-----------------------------------------------------------------------
+		; Al final la deteccion de colision la haremos al reves, en la...
+		; ... rutina de los enemigos (para poder identificar al enemigo abatido)
+		;-----------------------------------------------------------------------
+		;push	hl
+		;call	check_impacto_marciano
+		;pop	hl
+		;-----------------------------------------------------------------------
 
 		;--------------------------------------
 		ld	b,$08
@@ -51,7 +55,14 @@ disparo:
 		ld	(hl),$01
 		inc	h
 		djnz	bucle_dibuja_disparo
+
+		ld	a,h
+		sub	$08
+		ld	h,a
+		;--------------------------
+		call poner_attr_disparo
 	
+		;--------------------------
 		ret
 
 	desactivar_disparo:
@@ -88,14 +99,35 @@ check_tercio_anterior:
 
 		ret		; Retornamos RESTANDO tercio
 
-;==================================================================
-; 		Check Si hemos hecho blanco en marciano
-;------------------------------------------------------------------
-check_impacto_marciano:
-	call	leer_atributos
-	
-	ld	a,(hl)
-	cp	%01000100	; es de color verde?
+;==========================================================================
+;	Poner Atributos al disparo
+;--------------------------------------------------------------------------
+poner_attr_disparo:
+	ld	a,h
 
-	jr	z,$
+	cp	$40
+	jr	z,attr_disp_58
+
+	cp	$48
+	jr	z,attr_disp_59
+
+	jr	attr_disp_5a
+	jr	$
+
+attr_disp_58:
+	ld	h,$58
+	jr	terminar_y_poner_attr_disp
+
+attr_disp_59:
+	ld	h,$59
+	jr	terminar_y_poner_attr_disp
+
+attr_disp_5a:
+	ld	h,$5a
+
+terminar_y_poner_attr_disp:
+	ld	a,%01000011	; Color magenta brillante
+
+	ld	(hl),a
 	ret
+

@@ -30,6 +30,14 @@ bucle_principal:
 	call 	dibuja_nave
 	call	mover_marcianos
 	;halt
+	;halt
+	;halt
+	;halt
+	;halt
+	;halt
+	;halt
+	;halt
+	halt
 	halt			; A mas cantidad de halts... mas lento
 	
 jr	bucle_principal
@@ -139,51 +147,57 @@ marcianos_sprites:
 	DEFB	  4, 32,  0,  4, 32,  0, 15,240
 	DEFB	  0, 61,188,  0, 63,252,  0, 31
 	DEFB	248,  0, 12, 48,  0,  6, 96,  0
+	DEFB	 68, 68,  64
 
 	DEFB	  2, 16,  0,  2, 16,  0,  7,248
 	DEFB	  0, 30,222,  0, 31,254,  0, 15
 	DEFB	252,  0,  6, 24,  0,  3, 48,  0
+	DEFB     68, 68,  64
 
 	DEFB	  1,  8,  0,  1,  8,  0,  3,252
 	DEFB	  0, 15,111,  0, 15,255,  0,  7
 	DEFB	254,  0,  3, 12,  0,  1,  8,  0
+	DEFB	 68, 68, 64
 
 	DEFB	  0,132,  0,  0,132,  0,  1,254
 	DEFB	  0,  7,183,128,  7,255,128,  3
 	DEFB	255,  0,  1,134,  0,  0,132,  0
+	DEFB	  68, 68, 68
 
 	DEFB	  0,129,  0,  0, 66,  0,  0,255
 	DEFB	  0,  3,219,192,  3,255,192,  1
 	DEFB	231,128,  0, 66,  0,  0, 66,  0
+	DEFB     68, 68, 68
 
 	DEFB	  0, 64,128,  0, 33,  0,  0,127
 	DEFB	128,  1,237,224,  1,255,224,  0
 	DEFB	243,192,  0, 33,  0,  0, 64,128
+	DEFB	 68, 68, 68
 
 	DEFB	  0, 32, 64,  0, 16,128,  0, 63
 	DEFB	192,  0,246,240,  0,255,240,  0
 	DEFB	121,224,  0, 16,128,  0, 32, 64
+	DEFB     64, 68, 68
 
 	DEFB	  0,  8, 64,  0,  8, 64,  0, 31
 	DEFB	224,  0,123,120,  0,127,248,  0
 	DEFB	 60,240,  0,  8, 64,  0,  8, 64
+	DEFB     64, 68, 68
 
 	DEFB	  0,  4, 32,  0,  4, 32,  0, 15
 	DEFB	240,  0, 61,188,  0, 63,252,  0
 	DEFB	 30,120,  0,  4, 32,  0,  4, 32
+	DEFB	  64, 68, 68
 
 	DEFB	  0,  2, 16,  0,  2, 16,  0,  7
 	DEFB	248,  0, 30,222,  0, 31,254,  0
 	DEFB	 15,252,  0,  6, 24,  0,  2, 16
+	DEFB   64, 68, 68
 
 	DEFB	  0,  1,  8,  0,  1,  8,  0,  3
 	DEFB	252,  0, 15,111,  0, 15,255,  0
 	DEFB	  7,254,  0,  3, 12,  0,  1,  8
-	DEFB	 60, 60, 56, 60, 60, 56, 60, 60
-	DEFB	 56, 60, 60, 60, 60, 60, 60, 60
-	DEFB	 60, 60, 56, 60, 60, 56, 60, 60
-	DEFB	 56, 60, 60, 56, 60, 60, 56, 60
-	DEFB	 60
+	DEFB     64, 68, 68
 
 ;--------------------- $24 / 36 Estrellas ------------------------------------
 estrellas:						
@@ -193,6 +207,10 @@ defb	$46,$c2,16,$53,$11,16,$40,$67,8,$43,$98,4,$46,$0f,2,$54,$47,36
 defb	$4b,$09,16,$4f,$0c,32,$41,$e4,64,$45,$28,32,$50,$04,8,$4e,$6d,4
 defb	$49,$32,32,$44,$88,64,$43,$c6,16,$53,$11,8,$4a,$29,64,$4b,$06,16
 defb	$4e,$87,128,$47,$68,16,$45,$72,32,$42,$91,64,$55,$0b,8,$57,$2c,32
+
+;------------------ Marciano/s abatido/s (24 Marcianos) ----------------------
+marciano_abatido:
+defb	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 
 ;-----------------------------------------------------------------------------
 ;---		    V A R I A B L E S  en  M E M O R I A                   ---
@@ -211,14 +229,14 @@ settings	defb	$00	; Bits (flags) de los diferentes estados. Bits utilizados:
 marciano_y	defb	$40	; CoorY del marciano (h de hl)
 marciano_x	defb	$20	; CoorX del marciano (l de hl)
 rota_marciano	defb	$01	; Rotacion actual del marciano
-
+	
 include "sonido.asm"
 include "teclas.asm"
 include "jugador.asm"
 include "disparo.asm"
 include "estrellas.asm"
-include "enemigos2.asm"
-include "utils.asm"
+include "enemigos.asm"
+include "utils2.asm"
 
 ;------------------------------------------------------------------------------
 end	$8000

@@ -108,11 +108,11 @@ decrementar_l:
 	ret
 
 ;-------------------------------------------------
-; +24 bytes a DE para cambiar de sprite a dibujar
+; +27 bytes a DE para cambiar de sprite a dibujar
 ;-------------------------------------------------
 sumar_de_24:
 	ld	a,e
-	add	a,$18	; Sumar 24 bytes
+	add	a,$1b	; Sumar 27 bytes (24 + los 3 de attr)
 	ld	e,a
 	jr	nc,retornar
 

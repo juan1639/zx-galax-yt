@@ -25,15 +25,25 @@ attr_5a:
 	ld	h,$5a
 
 terminar_y_poner_attr:
-	ld	a,%01000100	; Color verde brillante
-	ld	(hl),a
-	
-	inc	l
+	ld	a,(hl)
+	cp	%01000011	; Hay en esta posicion color magenta? (disparo)
+	jr	z,$		; De momento detener programa
+
+	ld	a,(de)
 	ld	(hl),a
 
 	inc	l
+	inc	de
+
+	ld	a,(de)
 	ld	(hl),a
-	
+
+	inc	l
+	inc	de
+
+	ld	a,(de)
+	ld	(hl),a
+
 	ret
 
 ;================================================
@@ -62,11 +72,14 @@ leer_attr_59:
 leer_attr_5a:
 	ld	h,$5a
 	ret
+
 jr	$
 
+;=================================================
+; Check si es attr verde brillante (Marciano)...
+; ... o si es attr negro (fondo, no hay marciano)
+;-------------------------------------------------
+check_si_hay_marciano:
+	jr	$
 
 
-
-
-
-	
