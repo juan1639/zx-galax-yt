@@ -1,5 +1,5 @@
 ;================================================
-;	Poner Atributos
+;	Poner Atributos (SOLO PARA MARCIANOS)
 ;------------------------------------------------
 poner_atributos:
 	ld	a,h
@@ -25,21 +25,32 @@ attr_5a:
 	ld	h,$5a
 
 terminar_y_poner_attr:
-	ld	a,(hl)
-	cp	%01000011	; Hay en esta posicion color magenta? (disparo)
-	jr	z,$		; De momento detener programa
+	; --------------------------------
+	; 1er caracter marciano
+	;---------------------------------
+	call	check_colision_en_celda
+	
+	ld	a,(de)
+	ld	(hl),a
+
+	; --------------------------------
+	; 2do caracter marciano
+	;---------------------------------
+	inc	l
+	inc	de
+
+	call	check_colision_en_celda
 
 	ld	a,(de)
 	ld	(hl),a
 
+	; --------------------------------
+	; 3er caracter marciano
+	;---------------------------------
 	inc	l
 	inc	de
 
-	ld	a,(de)
-	ld	(hl),a
-
-	inc	l
-	inc	de
+	call check_colision_en_celda
 
 	ld	a,(de)
 	ld	(hl),a
@@ -76,10 +87,40 @@ leer_attr_5a:
 jr	$
 
 ;=================================================
-; Check si es attr verde brillante (Marciano)...
-; ... o si es attr negro (fondo, no hay marciano)
+; Check colision entre disparo y marciano
+;
 ;-------------------------------------------------
-check_si_hay_marciano:
+check_colision_en_celda:
+	ld	a,(hl)
+	cp	%01000011	; (67) hay un attr magenta brillante? (disparo)
+	ret	nz
+
+	ld	a,(de)
+	cp	%01000100	; (68) hay un attr verde brillante? (marciano)
+	ret	nz
+
+	;----------------------------
+	; Llegados aqui, hay colision
+	;----------------------------
+	ld	a,(settings)
+	set	2,a
+	ld	(settings),a
+	ret
+
+;=================================================
+; Check si hemos ABATIDO a un MARCIANO...
+; ... (leyendo el bit 2 de settings)
+;-------------------------------------------------
+check_abatido_marciano:
+	ld	a,(settings)
+	bit	2,a
+	ret	z
+
+	ld	a,%01010101
+	ld	hl,$4800
+	ld	(hl),a
 	jr	$
+
+
 
 

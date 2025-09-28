@@ -29,6 +29,7 @@ bucle_principal:
 	call	leer_teclado
 	call 	dibuja_nave
 	call	mover_marcianos
+	call	check_abatido_marciano
 	;halt
 	;halt
 	;halt
@@ -225,18 +226,19 @@ settings	defb	$00	; Bits (flags) de los diferentes estados. Bits utilizados:
 
 ; Bit 0 ... 0=Disparo permitido		| 1=Disparo NO permitido (0000 0001)
 ; Bit 1 ... 0=Enemigos a la dcha.	| 1=Enemigos a la izda. 
+; Bit 2 ... 0=marciano abatido OFF	| 1=Marciano abatido ON
 
 marciano_y	defb	$40	; CoorY del marciano (h de hl)
 marciano_x	defb	$20	; CoorX del marciano (l de hl)
 rota_marciano	defb	$01	; Rotacion actual del marciano
-	
+
 include "sonido.asm"
 include "teclas.asm"
 include "jugador.asm"
 include "disparo.asm"
 include "estrellas.asm"
 include "enemigos.asm"
-include "utils2.asm"
+include "utils.asm"
 
 ;------------------------------------------------------------------------------
 end	$8000

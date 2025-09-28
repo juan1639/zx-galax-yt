@@ -25,28 +25,36 @@ attr_5a:
 	ld	h,$5a
 
 terminar_y_poner_attr:
-	;ld	a,%01001100	; Color verde brillante
-
-	ld	a,(hl)
-	cp	%01000011	; Es el atributo de esta posicion magenta brillante??
-	jr	z,$		; entonces de momento parar el programa
-
+	; --------------------------------
+	; 1er Byte marciano
+	;---------------------------------
+	call	check_colision_en_celda
+	
 	ld	a,(de)
 	ld	(hl),a
 
+	; --------------------------------
+	; 2do Byte marciano
+	;---------------------------------
 	inc	l
 	inc	de
 
+	call	check_colision_en_celda
+	
 	ld	a,(de)
 	ld	(hl),a
 
+	; --------------------------------
+	; 3er Byte marciano
+	;---------------------------------
 	inc	l
 	inc	de
 
+	call	check_colision_en_celda
+
 	ld	a,(de)
 	ld	(hl),a
 
-	impacto_y_ret:
 	ret
 
 ;================================================
@@ -77,17 +85,37 @@ leer_attr_5a:
 	ret
 jr	$
 
-;=================================================
-; Check si es attr verde brillante (Marciano)...
-; ... o si es attr negro (fondo, no hay marciano)
-;-------------------------------------------------
-check_si_hay_marciano:
-	jr	$
+;===================================================
+; Check si coinciden en una delda, magenta (disparo)
+; ... y verde brillante (marciano)
+;---------------------------------------------------
+check_colision_en_celda:
+	ld  a,(hl)
+    	cp  %01000011     ; ¿magenta en pantalla?
+    	ret nz
 
-
-
-
-
-
-
+    	ld  a,(de)
+    	cp  %01000100     ; ¿sprite = marciano verde?
+    	ret nz
 	
+	;-----------------------
+    	; 	Colisión
+	;-----------------------
+	ld	a,(settings)
+	set	2,a
+	ld	(settings),a
+    	ret
+
+;=================================================
+; Check si hemos ABATIDO a un MARCIANO...
+; ... (leyendo el bit 2 de settings)
+;-------------------------------------------------
+check_abatido_marciano:
+	ld	a,(settings)
+	bit	2,a
+	ret	z
+
+	ld	a,%01010101
+	ld	hl,$4800
+	ld	(hl),a
+	jr	$
