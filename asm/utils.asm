@@ -104,6 +104,12 @@ check_colision_en_celda:
 	;----------------------------
 	ld	a,(settings)
 	set	2,a
+
+	;--------------------------------------
+	; Aprovechamos tb para desactivar...
+	; ...el disparo (para que no atraviese)
+	;--------------------------------------
+	res	0,a
 	ld	(settings),a
 	ret
 
@@ -112,9 +118,13 @@ check_colision_en_celda:
 ; ... (leyendo el bit 2 de settings)
 ;-------------------------------------------------
 check_abatido_marciano:
+	ret
 	ld	a,(settings)
-	bit	2,a
-	ret	z
+	res	2,a
+	ld	(settings),a
+	ret
+
+	ret
 
 	ld	a,%01010101
 	ld	hl,$4800

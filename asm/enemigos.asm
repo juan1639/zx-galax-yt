@@ -14,6 +14,21 @@ mover_marcianos:
 	ld	b,$18	; Bucle de 24 marcianos
 
 bucle_todos_los_marcianos:
+	ld	de,marciano_abatido
+	ld	a,e
+	add	a,b
+	ld	e,a
+
+	call	decrementar_si_carry
+
+	ld	a,(de)
+	or	a
+	jp	nz,marciano_desactivado	; Marciano desactivado (salta)
+
+	;---------------------------------------
+	; Situarse en el sprite correspondiente
+	; para comenzar a dibujar, etc.
+	;---------------------------------------
 	ld	de,marcianos_sprites
 
 	ld	a,(rota_marciano)
@@ -85,7 +100,33 @@ bucle_todos_los_marcianos:
 
 	cp	$09
 	call	z,decrementar_l
+
+	;---------------------------------
+	; Desactivar marciano
+	; (si ha sido abatido)
+	;---------------------------------
+	ld	a,(settings)
+	bit	2,a
+	jr	z,salta_no_abatido
+
+	res	2,a
+	ld	(settings),a
+
+	push	de
+
+	ld	de,marciano_abatido
+	ld	a,e
+	add	a,b
+	ld	e,a
+
+	call	decrementar_si_carry
+
+	ld	a,$01
+	ld	(de),a
 	
+	pop	de
+	
+	salta_no_abatido:
 djnz 	bucle_todos_los_marcianos
 ret
 
@@ -165,9 +206,37 @@ cambio_a_la_derecha:
 	ld	(settings),a
 	ret
 
-
+;------------------------------------
+decrementar_si_carry:
+	ret	nc
 	
+	dec	d
+	ret
 
-	
+;========================================================
+; Marciano desactivado (hacer esto antes de saltar...
+; ...a la siguiente iteracion del bucle
+;--------------------------------------------------------
+marciano_desactivado:
+	inc	l
+	inc	l
+	inc	l
+	inc	l
+	inc	de
+	inc	de
+	inc	de
+	inc	de
+
+	ld	a,b
+	cp	$11
+	call	z,incrementar_l
+
+	cp	$09
+	call	z,decrementar_l
+
+	jr	salta_no_abatido
+jr	$
+
+
 
 	
