@@ -113,10 +113,11 @@ check_colision_en_celda:
 	ld	(settings),a
 	ret
 
-;=================================================
+;==================================================
+; *** E S T A   R U T I N A   N O   S E   U S A **
 ; Check si hemos ABATIDO a un MARCIANO...
 ; ... (leyendo el bit 2 de settings)
-;-------------------------------------------------
+;--------------------------------------------------
 check_abatido_marciano:
 	ret
 	ld	a,(settings)

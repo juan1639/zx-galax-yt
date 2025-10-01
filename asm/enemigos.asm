@@ -112,6 +112,8 @@ bucle_todos_los_marcianos:
 	res	2,a
 	ld	(settings),a
 
+	call	iniciar_explosion_marciano
+
 	push	de
 
 	ld	de,marciano_abatido
@@ -237,6 +239,21 @@ marciano_desactivado:
 	jr	salta_no_abatido
 jr	$
 
+;========================================================
+; INICIAR Explosion Marciano (asignar las coordenadas...
+; ... y la cuenta atras de frames de explosion)
+;--------------------------------------------------------
+iniciar_explosion_marciano:
+	ld	a,h
+	ld	(explo_marciano_y),a
 
+	ld	a,l
+	dec	a
+	dec	a
+	dec	a
+	dec	a
+	ld	(explo_marciano_x),a
 
-	
+	ld	a,$0a			; a0 = 10 frames 
+	ld	(explo_marciano_timer),a	; Cuenta atras (10 frames)
+	ret

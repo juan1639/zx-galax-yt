@@ -29,7 +29,7 @@ bucle_principal:
 	call	leer_teclado
 	call 	dibuja_nave
 	call	mover_marcianos
-	call	check_abatido_marciano
+	call	frames_explo_marciano
 	;halt
 	;halt
 	;halt
@@ -166,6 +166,11 @@ marciano_y	defb	$40	; CoorY del marciano (h de hl)
 marciano_x	defb	$20	; CoorX del marciano (l de hl)
 rota_marciano	defb	$01	; Rotacion actual del marciano
 
+explo_marciano_y	defb	$40	; Coor Y de la explosion marciano
+explo_marciano_x	defb	$c0	; Coor X de la explosion marcinao
+explo_marciano_timer	defb	$00	; Cuenta atras frames explosion marciano
+
+;------------------------------------------------------------------------------
 include "sonido.asm"
 include "teclas.asm"
 include "jugador.asm"
@@ -174,6 +179,7 @@ include "estrellas.asm"
 include "enemigos.asm"
 include "utils.asm"
 include "sprites.asm"
+include "explomarciano.asm"
 
 ;------------------------------------------------------------------------------
 end	$8000
