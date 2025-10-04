@@ -93,14 +93,7 @@ bucle_todos_los_marcianos:
 	inc	l
 
 	pop	bc
-
-	ld	a,b
-	cp	$11
-	call	z,incrementar_l
-
-	cp	$09
-	call	z,decrementar_l
-
+	
 	;---------------------------------
 	; Desactivar marciano
 	; (si ha sido abatido)
@@ -114,6 +107,16 @@ bucle_todos_los_marcianos:
 
 	call	iniciar_explosion_marciano
 
+	;---------------------------
+	call	sumar_puntos
+
+	push	de
+	push	bc
+	call	mostrar_marcadores
+	pop	bc
+	pop 	de
+
+	;---------------------------
 	push	de
 
 	ld	de,marciano_abatido
@@ -228,13 +231,6 @@ marciano_desactivado:
 	inc	de
 	inc	de
 	inc	de
-
-	ld	a,b
-	cp	$11
-	call	z,incrementar_l
-
-	cp	$09
-	call	z,decrementar_l
 
 	jr	salta_no_abatido
 jr	$

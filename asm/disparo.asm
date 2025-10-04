@@ -69,6 +69,8 @@ disparo:
 		ld	a,(settings)
 		res	0,a
 		ld	(settings),a
+
+		call	mostrar_marcadores
 		ret
 
 ;---------------------------------------------------------------------------

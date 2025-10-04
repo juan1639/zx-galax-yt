@@ -1,6 +1,6 @@
 ;========================================================
-; D I B U J A R  la explosion del marciano (si procede)
-; 
+; 		  D I B U J A R  
+;	la explosion del marciano (si procede)
 ;--------------------------------------------------------
 frames_explo_marciano:
 	ld	a,(explo_marciano_timer)

@@ -114,6 +114,23 @@ check_colision_en_celda:
 	ret
 
 ;==================================================
+; 	      S U M A R   P U N T O S
+;--------------------------------------------------
+sumar_puntos:
+	ld	a,(num_puntos + 1)
+	add	a,$0a			; 10 puntos (sumar)
+	ld	(num_puntos + 1),a
+
+	jr	c,sumar_puntos_carry
+ret
+
+sumar_puntos_carry:
+	ld	a,(num_puntos)
+	inc	a
+	ld	(num_puntos),a
+ret
+
+;==================================================
 ; *** E S T A   R U T I N A   N O   S E   U S A **
 ; Check si hemos ABATIDO a un MARCIANO...
 ; ... (leyendo el bit 2 de settings)

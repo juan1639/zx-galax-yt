@@ -8,6 +8,20 @@ LIMITE_DE	equ	$be
 beeper		equ	$03b5	; Rutina del sistema Beeper (hl=nota | de=duracion)
 				; Altera registros hl,de,bc,af,ix
 
+locate		equ 	$0dd9	; Rutina sistema: (Locate), (B = ycoord, C = xcoord)
+pr_string	equ	$203c	; Rutina sistema para imprimir textos
+out_num		equ	$1a1b	; Rutina sistema para imprimir numeros (0-9999)
+
+_CR         	equ $0d
+_INK        	equ $10
+_PAPER      	equ $11
+_FLASH      	equ $12
+_BRIGHT     	equ $13
+_INVERSE    	equ $14
+_OVER       	equ $15
+_AT        	equ $16
+_TAB   		equ $17
+
 ;==========================================================================
 ;---			C O M I E N Z O   P R O G R A M A		---
 ;---									---
@@ -17,6 +31,7 @@ call	sub_cls
 call 	sub_cls_attr
 call	sub_attr_generales
 call	sub_attr_zonas
+call	mostrar_marcadores
 
 ;==========================================================================
 ;---                                                                    ---
@@ -131,6 +146,23 @@ sub_cls:
 	ldir
 ret
 
+;==========================================================================
+;---		            SUB -  SHOW SCORES                          ---
+;--------------------------------------------------------------------------
+mostrar_marcadores:
+	ld	de,txt_puntos
+	ld	bc,$0e
+	call	pr_string
+
+	ld	a,(num_puntos)
+	ld	b,a
+
+	ld	a,(num_puntos + 1)
+	ld	c,a
+
+	call	out_num
+ret
+
 ;=============================================================================
 ;-------------------------- $24 / 36 Estrellas -------------------------------
 ;-----------------------------------------------------------------------------
@@ -163,12 +195,17 @@ settings	defb	$00	; Bits (flags) de los diferentes estados. Bits utilizados:
 ; Bit 2 ... 0=marciano abatido OFF	| 1=Marciano abatido ON
 
 marciano_y	defb	$40	; CoorY del marciano (h de hl)
-marciano_x	defb	$20	; CoorX del marciano (l de hl)
+marciano_x	defb	$40	; CoorX del marciano (l de hl)
 rota_marciano	defb	$01	; Rotacion actual del marciano
 
 explo_marciano_y	defb	$40	; Coor Y de la explosion marciano
 explo_marciano_x	defb	$c0	; Coor X de la explosion marcinao
 explo_marciano_timer	defb	$00	; Cuenta atras frames explosion marciano
+
+txt_puntos	defb	_PAPER, $00, _INK, $06, _AT, $00, $01, "Puntos:"
+
+num_puntos:
+	defb	$00, $00
 
 ;------------------------------------------------------------------------------
 include "sonido.asm"
