@@ -77,7 +77,7 @@ check_limite:
 	ld	h,%01000000	; Carga en h $4000
 	res	7,l
 	res	6,l
-	res	5,l		; l = FFFC CCCC
+	set	5,l		; l = FFFC CCCC
 	ld	a,l
 	add	a,$0e
 	ld	l,a

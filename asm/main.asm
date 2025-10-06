@@ -8,6 +8,8 @@ LIMITE_DE	equ	$be
 beeper		equ	$03b5	; Rutina del sistema Beeper (hl=nota | de=duracion)
 				; Altera registros hl,de,bc,af,ix
 
+border_c	equ 	$5c48	; Variable sistema (Borde)
+
 locate		equ 	$0dd9	; Rutina sistema: (Locate), (B = ycoord, C = xcoord)
 pr_string	equ	$203c	; Rutina sistema para imprimir textos
 out_num		equ	$1a1b	; Rutina sistema para imprimir numeros (0-9999)
@@ -31,6 +33,7 @@ call	sub_cls
 call 	sub_cls_attr
 call	sub_attr_generales
 call	sub_attr_zonas
+call	borde
 call	mostrar_marcadores
 
 ;==========================================================================
@@ -45,6 +48,7 @@ bucle_principal:
 	call 	dibuja_nave
 	call	mover_marcianos
 	call	frames_explo_marciano
+	call	check_todos_abatidos
 	;halt
 	;halt
 	;halt
@@ -147,13 +151,40 @@ sub_cls:
 ret
 
 ;==========================================================================
+;---		       SUB -  ESTABLECER COLOR BORDE                    ---
+;--------------------------------------------------------------------------
+borde:
+	ld	a,%00000111	; 00BBB111 (B = borde)
+	ld	(border_c), a
+
+	ld	a,$00		; Color del Borde (negro)
+	out	($fe),a		; Puerto FE
+ret
+
+;==========================================================================
+;         	   SUB -  CHECK TODOS ABATIDOS
+;--------------------------------------------------------------------------
+check_todos_abatidos:
+	ld	a,(num_marcianos)
+	or	a
+	ret	nz
+
+	ld	de,txt_levelup
+	ld	bc,$1c
+	call	pr_string
+	jr	$
+ret
+
+;==========================================================================
 ;---		            SUB -  SHOW SCORES                          ---
 ;--------------------------------------------------------------------------
 mostrar_marcadores:
 	ld	de,txt_puntos
 	ld	bc,$0e
+
 	call	pr_string
 
+	;--------------------------
 	ld	a,(num_puntos)
 	ld	b,a
 
@@ -161,10 +192,24 @@ mostrar_marcadores:
 	ld	c,a
 
 	call	out_num
+
+	;--------------------------
+	ld	de,txt_vidas
+	ld	bc,$0d
+
+	call	pr_string
+
+	;--------------------------
+	ld	b,$00
+
+	ld	a,(num_vidas)
+	ld	c,a
+
+	call	out_num
 ret
 
 ;=============================================================================
-;-------------------------- $24 / 36 Estrellas -------------------------------
+; 			     $24 / 36 Estrellas
 ;-----------------------------------------------------------------------------
 estrellas:						
 defb	$42,$4f,2,$47,$67,8,$4a,$83,64,$55,$10,32,$50,$14,32,$4f,$28,1
@@ -193,19 +238,26 @@ settings	defb	$00	; Bits (flags) de los diferentes estados. Bits utilizados:
 ; Bit 0 ... 0=Disparo permitido		| 1=Disparo NO permitido (0000 0001)
 ; Bit 1 ... 0=Enemigos a la dcha.	| 1=Enemigos a la izda. 
 ; Bit 2 ... 0=marciano abatido OFF	| 1=Marciano abatido ON
+; Bit 3 ... 0=nivel NO superado		| 1=Nivel SUPERADO
 
 marciano_y	defb	$40	; CoorY del marciano (h de hl)
 marciano_x	defb	$40	; CoorX del marciano (l de hl)
 rota_marciano	defb	$01	; Rotacion actual del marciano
+
+num_marcianos	defb	$18	; Numero de marcianos 24 (para checkear nivel superado)
 
 explo_marciano_y	defb	$40	; Coor Y de la explosion marciano
 explo_marciano_x	defb	$c0	; Coor X de la explosion marcinao
 explo_marciano_timer	defb	$00	; Cuenta atras frames explosion marciano
 
 txt_puntos	defb	_PAPER, $00, _INK, $06, _AT, $00, $01, "Puntos:"
+txt_vidas	defb	_PAPER, $00, _INK, $06, _AT, $00, $14, "Vidas:"
+txt_levelup	defb	_BRIGHT, $01, _FLASH, $01, _PAPER, $00, _INK, $05, _AT, $0c, $08, " L E V E L   U P "
 
 num_puntos:
 	defb	$00, $00
+
+num_vidas	defb	$03	; numero de vidas
 
 ;------------------------------------------------------------------------------
 include "sonido.asm"

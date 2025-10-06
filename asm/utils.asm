@@ -131,6 +131,15 @@ sumar_puntos_carry:
 ret
 
 ;==================================================
+;      RESTAR MARCIANO (A num_marcianos)
+;--------------------------------------------------
+restar_marciano:
+	ld	a,(num_marcianos)
+	dec	a
+	ld	(num_marcianos),a
+ret
+
+;==================================================
 ; *** E S T A   R U T I N A   N O   S E   U S A **
 ; Check si hemos ABATIDO a un MARCIANO...
 ; ... (leyendo el bit 2 de settings)

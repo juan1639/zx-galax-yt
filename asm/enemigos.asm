@@ -108,6 +108,8 @@ bucle_todos_los_marcianos:
 	call	iniciar_explosion_marciano
 
 	;---------------------------
+	;    Sumar puntuacion
+	;---------------------------
 	call	sumar_puntos
 
 	push	de
@@ -116,7 +118,9 @@ bucle_todos_los_marcianos:
 	pop	bc
 	pop 	de
 
-	;---------------------------
+	;-----------------------------
+	; 'Desactivar' marciano actual
+	;-----------------------------
 	push	de
 
 	ld	de,marciano_abatido
@@ -128,9 +132,14 @@ bucle_todos_los_marcianos:
 
 	ld	a,$01
 	ld	(de),a
-	
+
 	pop	de
-	
+
+	;---------------------------
+	; Restamos 1 marciano
+	;---------------------------
+	call	restar_marciano
+
 	salta_no_abatido:
 djnz 	bucle_todos_los_marcianos
 ret
