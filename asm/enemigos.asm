@@ -83,6 +83,13 @@ bucle_todos_los_marcianos:
 
 	;---------------------------------
 	push	hl
+	push	bc
+	call	check_si_marciano_nos_dispara
+	pop	bc
+	pop	hl
+
+	;---------------------------------
+	push	hl
 	call	poner_atributos
 	pop	hl
 	
@@ -147,6 +154,8 @@ ret
 ;----------------------------------------------------
 ; Inc y Dec del registro hl para que la formacion...
 ; ... de naves quede un poco mas entrelazada
+; 
+; ************ AL FINAL NO LA USAMOS ***************
 ;----------------------------------------------------
 incrementar_l:
 	inc	l

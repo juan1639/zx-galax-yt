@@ -139,6 +139,174 @@ restar_marciano:
 	ld	(num_marcianos),a
 ret
 
+
+;==================================================
+; 
+;      CHECK SI MARCIANO NOS DISPARA...
+; 
+;--------------------------------------------------
+check_si_marciano_nos_dispara:
+	ld	a,(settings)
+	bit	5,a
+	ret	nz
+
+	;------------------------------------
+	push	hl
+	;------------------------------------
+	res	7,l
+	res	6,l
+	res	5,l
+	res	4,l
+
+	ld	a,(nave_x)
+	and	%00001111
+	cp	l
+	
+	;------------------------------------
+	pop	hl
+	;------------------------------------
+	ret	nz	; Retorna si NO estamos debajo
+
+	;------------------------------------
+	; Si estamos justo debajo NOS DISPARA
+	;------------------------------------
+	ld	a,(settings)
+	set	5,a
+	ld	(settings),a
+
+	;------------------------------------
+	call	sumar_media_pantalla
+	inc	a
+	ld	(disparo_marciano_x),a
+	ld	l,a
+
+	ld	a,h
+	ld	(disparo_marciano_y),a
+
+	;------------------------------------
+	ld	b,$08
+
+	bucle_disparo_marciano_inicial:
+		ld	(hl),$03	; 0000 0011
+		inc	h
+	djnz	bucle_disparo_marciano_inicial
+ret
+
+;---------------------------------------------
+sumar_media_pantalla:
+	ld	a,(nave_x)
+	and	%11110000
+	cp	$b0
+
+	ld	a,l
+
+	ret 	nz
+
+	add	a,$0f
+ret
+
+;==================================================
+; 
+; 	DISPARO MARCIANO (DISPARO CAYENDO)
+;
+;--------------------------------------------------
+disparo_marciano:
+	ld	a,(settings)
+	bit	5,a
+	ret	z
+
+	;-------------------------------
+	; Borra disparo marciano
+	;-------------------------------
+		ld	a,(disparo_marciano_y)	; Borrar CoorY (vieja)
+		ld	h,a
+		ld	a,(disparo_marciano_x)	; Borrar CoorX (vieja)
+		ld	l,a
+
+		;------------- Sonido disparo marciano ----------
+		;ld	a,$02
+		;call	sonido
+
+		;------------------------------------------------
+		ld	b,$08
+
+		bucle_borra_disparo_marciano:
+			ld	(hl),$00
+			inc	h
+		djnz	bucle_borra_disparo_marciano
+
+		;-------------------------------
+		; Dibuja disparo marciano
+		;-------------------------------
+		ld	a,h
+		sub	$08
+		ld	h,a
+		ld	(disparo_marciano_y),a	; Actualizamos la nueva coorY (para dibujar)
+
+		call 	check_tercio_siguiente
+		ld	a,h
+		cp	$58
+		jr	z, desactivar_disparo_marciano	; FIN del disparo marciano (fin 3er tercio)
+
+		;-----------------------------------------------------------------------
+		; Al final la deteccion de colision la haremos al reves, en la...
+		; ... rutina de los enemigos (para poder identificar al enemigo abatido)
+		;-----------------------------------------------------------------------
+		;push	hl
+		;call	check_impacto_marciano
+		;pop	hl
+		;-----------------------------------------------------------------------
+
+		;--------------------------------------
+		ld	b,$08
+
+		bucle_dibuja_disparo_marciano:
+			ld	(hl),$03
+			inc	h
+		djnz	bucle_dibuja_disparo_marciano
+
+		ld	a,h
+		sub	$08
+		ld	h,a
+		
+		ret
+
+desactivar_disparo_marciano:
+	ld	a,(settings)
+	res	5,a
+	ld	(settings),a
+ret
+
+;---------------------------------------------------------------------------
+; 			   Check Tercio Siguiente
+;---------------------------------------------------------------------------
+check_tercio_siguiente:
+	ld	a,l
+	and	%11100000
+	cp	%11100000
+
+	jr	z,sumar_tercio
+
+	ld	a,l
+	add	a,$20
+	ld	l,a
+	ld	(disparo_marciano_x),a
+
+	ret		; Retornamos SIN sumar tercio (normal)
+
+	sumar_tercio:
+		ld	a,l
+		add	a,$20
+		ld	l,a
+		ld	(disparo_marciano_x),a
+
+		ld	a,h
+		add	a,$08
+		ld	h,a		; Sumamos 8 a h, obteniendo 'nuevo' tercio
+		ld	(disparo_marciano_y),a
+
+		ret		; Retornamos SUMANDO tercio
+
 ;==================================================
 ; *** E S T A   R U T I N A   N O   S E   U S A **
 ; Check si hemos ABATIDO a un MARCIANO...

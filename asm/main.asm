@@ -1,6 +1,8 @@
 org	$8000
 
-;----------------------   C O N S T A N T E S   ---------------------------
+;--------------------------------------------------------------------------
+;                         C O N S T A N T E S
+;--------------------------------------------------------------------------
 NAVE_Y		equ	$50
 LIMITE_IZ	equ	$a0
 LIMITE_DE	equ	$be
@@ -46,6 +48,7 @@ bucle_principal:
 	call	disparo
 	call	leer_teclado
 	call 	dibuja_nave
+	call	disparo_marciano
 	call	mover_marcianos
 	call	frames_explo_marciano
 	call	check_todos_abatidos
@@ -209,6 +212,11 @@ mostrar_marcadores:
 ret
 
 ;=============================================================================
+;---									   ---
+;---		    V A R I A B L E S  en  M E M O R I A                   ---
+;---									   ---
+;-----------------------------------------------------------------------------
+;=============================================================================
 ; 			     $24 / 36 Estrellas
 ;-----------------------------------------------------------------------------
 estrellas:						
@@ -219,37 +227,44 @@ defb	$4b,$09,16,$4f,$0c,32,$41,$e4,64,$45,$28,32,$50,$04,8,$4e,$6d,4
 defb	$49,$32,32,$44,$88,64,$43,$c6,16,$53,$11,8,$4a,$29,64,$4b,$06,16
 defb	$4e,$87,128,$47,$68,16,$45,$72,32,$42,$91,64,$55,$0b,8,$57,$2c,32
 
-;------------------ Marciano/s abatido/s (24 Marcianos) ----------------------
-marciano_abatido:
-defb	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-defb	0	; Hay uno de mas, para que cuadre al ser b y bc regresivos
-
-;-----------------------------------------------------------------------------
-;---		    V A R I A B L E S  en  M E M O R I A                   ---
 ;-----------------------------------------------------------------------------
 ; NAVE_Y esta declarada como constante (porque solo se mueve en horizontal)
 nave_x		defb	$af	; Posicion X de la nave (l de hl)
 
+;-----------------------------------------------------------------------------
 disparo_y	defb	$50	; Posicion Y del disparo (h de hl)
 disparo_x	defb	$8f	; Posicion X del disparo (l de hl)
 
+;-----------------------------------------------------------------------------
 settings	defb	$00	; Bits (flags) de los diferentes estados. Bits utilizados:
 
 ; Bit 0 ... 0=Disparo permitido		| 1=Disparo NO permitido (0000 0001)
 ; Bit 1 ... 0=Enemigos a la dcha.	| 1=Enemigos a la izda. 
 ; Bit 2 ... 0=marciano abatido OFF	| 1=Marciano abatido ON
-; Bit 3 ... 0=nivel NO superado		| 1=Nivel SUPERADO
+; Bit 3 ... 0=Nivel NO superado		| 1=Nivel SUPERADO
+; Bit 4 ... 0=Inicio ataque marciano OFF| 1=Inicio ataque marciano ON
+; Bit 5 ... 0=Marciano atacando OFF	| 1=Marciano atacando ON
 
+;----------------------------------------------------------------------------
 marciano_y	defb	$40	; CoorY del marciano (h de hl)
 marciano_x	defb	$40	; CoorX del marciano (l de hl)
 rota_marciano	defb	$01	; Rotacion actual del marciano
-
-num_marcianos	defb	$18	; Numero de marcianos 24 (para checkear nivel superado)
 
 explo_marciano_y	defb	$40	; Coor Y de la explosion marciano
 explo_marciano_x	defb	$c0	; Coor X de la explosion marcinao
 explo_marciano_timer	defb	$00	; Cuenta atras frames explosion marciano
 
+disparo_marciano_y	defb	$40	; Posicion Y del disparo marciano
+disparo_marciano_x	defb	$00	; Posicion X del disparo marciano
+
+;------------------ Marciano/s abatido/s (24 Marcianos) ----------------------
+marciano_abatido:
+defb	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+defb	0	; Hay uno de mas, para que cuadre al ser b y bc regresivos
+
+num_marcianos	defb	$18	; Numero de marcianos 24 (para checkear nivel superado)
+
+;-----------------------------------------------------------------------------
 txt_puntos	defb	_PAPER, $00, _INK, $06, _AT, $00, $01, "Puntos:"
 txt_vidas	defb	_PAPER, $00, _INK, $06, _AT, $00, $14, "Vidas:"
 txt_levelup	defb	_BRIGHT, $01, _FLASH, $01, _PAPER, $00, _INK, $05, _AT, $0c, $08, " L E V E L   U P "
@@ -259,7 +274,7 @@ num_puntos:
 
 num_vidas	defb	$03	; numero de vidas
 
-;------------------------------------------------------------------------------
+;==============================================================================
 include "sonido.asm"
 include "teclas.asm"
 include "jugador.asm"
