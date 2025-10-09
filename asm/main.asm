@@ -242,7 +242,7 @@ settings	defb	$00	; Bits (flags) de los diferentes estados. Bits utilizados:
 ; Bit 1 ... 0=Enemigos a la dcha.	| 1=Enemigos a la izda. 
 ; Bit 2 ... 0=marciano abatido OFF	| 1=Marciano abatido ON
 ; Bit 3 ... 0=Nivel NO superado		| 1=Nivel SUPERADO
-; Bit 4 ... 0=Inicio ataque marciano OFF| 1=Inicio ataque marciano ON
+; Bit 4 ...
 ; Bit 5 ... 0=Marciano atacando OFF	| 1=Marciano atacando ON
 
 ;----------------------------------------------------------------------------

@@ -80,7 +80,7 @@ bucle_todos_los_marcianos:
 	ld	a,h
 	sub	$08
 	ld	h,a
-
+	
 	;---------------------------------
 	push	hl
 	push	bc

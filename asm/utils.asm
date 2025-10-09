@@ -147,12 +147,11 @@ ret
 ;--------------------------------------------------
 check_si_marciano_nos_dispara:
 	ld	a,(settings)
-	bit	5,a
-	ret	nz
-
-	;------------------------------------
+	bit	5,a		; Hay un disparo marciano activo??
+	ret	nz		; ... si lo hay retorna
+	
 	push	hl
-	;------------------------------------
+
 	res	7,l
 	res	6,l
 	res	5,l
@@ -161,10 +160,9 @@ check_si_marciano_nos_dispara:
 	ld	a,(nave_x)
 	and	%00001111
 	cp	l
-	
-	;------------------------------------
+
 	pop	hl
-	;------------------------------------
+	
 	ret	nz	; Retorna si NO estamos debajo
 
 	;------------------------------------
@@ -174,14 +172,12 @@ check_si_marciano_nos_dispara:
 	set	5,a
 	ld	(settings),a
 
-	;------------------------------------
-	call	sumar_media_pantalla
-	inc	a
-	ld	(disparo_marciano_x),a
-	ld	l,a
-
 	ld	a,h
 	ld	(disparo_marciano_y),a
+
+	ld	a,l
+	inc	a
+	ld	(disparo_marciano_x),a
 
 	;------------------------------------
 	ld	b,$08
@@ -190,19 +186,6 @@ check_si_marciano_nos_dispara:
 		ld	(hl),$03	; 0000 0011
 		inc	h
 	djnz	bucle_disparo_marciano_inicial
-ret
-
-;---------------------------------------------
-sumar_media_pantalla:
-	ld	a,(nave_x)
-	and	%11110000
-	cp	$b0
-
-	ld	a,l
-
-	ret 	nz
-
-	add	a,$0f
 ret
 
 ;==================================================
@@ -283,7 +266,7 @@ ret
 check_tercio_siguiente:
 	ld	a,l
 	and	%11100000
-	cp	%11100000
+	cp	%11100000	; es la 7ma fila del byte??
 
 	jr	z,sumar_tercio
 
