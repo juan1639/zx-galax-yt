@@ -139,33 +139,6 @@ restar_marciano:
 	ld	(num_marcianos),a
 ret
 
-
-;==================================================
-; 
-;      CHECK SI MARCIANO NOS DISPARA (NO vale)...
-; 
-;--------------------------------------------------
-check_si_marciano_nos_dispara_novale:
-	ld	a,(settings)
-	bit	5,a		; Hay un disparo marciano activo??
-	ret	nz		; ... si lo hay retorna
-	
-	push	hl
-
-	res	7,l
-	res	6,l
-	res	5,l
-	res	4,l
-
-	ld	a,(nave_x)
-	and	%00001111
-	cp	l
-
-	pop	hl
-	
-	ret	nz	; Retorna si NO estamos debajo
-ret
-
 ;==================================================
 ; 
 ; 	DISPARO MARCIANO (DISPARO CAYENDO)
@@ -320,30 +293,30 @@ ret
 ; direccion de memoria de imagen en baja resolucion.
 ;
 ; Entrada:   HL = Direccion de memoria del caracter (c,f)
-; Salida:    B = FILA, C = COLUMNA
+; Salida:    BC --> B = FILA, C = COLUMNA
 ;--------------------------------------------------------
 get_char_coord_lr:
 	;--------------------------------------------
-	; HL = 010TT000 NNNCCCCCb ->
-	; --> Fila = 000TTNNNb y Columna = 000CCCCCb
+	; HL = 010TT000 FFFCCCCC
+	; --> Fila = 000TTFFF y Columna = 000CCCCC
 	;--------------------------------------------
 	ld a, h                  ; A = H, para extraer los bits de tercio
-	and %00011000		 ; A = 000TT000b
-	ld b, a                  ; B = A = 000TT000b
+	and %00011000		 ; A = 000TT000
+	ld b, a                  ; B = A = 000TT000
 
-	ld a, l                  ; A = L, para extraer los bits de N (FT)
-	and %11100000          	 ; A = A and 11100000b = NNN00000b
+	ld a, l                  ; A = L, para extraer los bits de F (FT)
+	and %11100000          	 ; A = A and 11100000 = FFF00000
 	rlc a                    ; Rotamos A 3 veces a la izquierda
 	rlc a
-	rlc a                    ; A = 00000NNNb
-	or b                     ; A = A or b = 000TTNNNb
-	ld b, a                  ; B = A = 000TTNNNb
+	rlc a                    ; A = 00000FFF
+	or b                     ; A = A or b = 000TTFFF  00000001
+	ld b, a                  ; B = A = 000TTFFF
 	
 	; ------------ Calculo de la columna --------
 	ld a, l                  ; A = L, para extraer los bits de columna
 	and %00011111            ; Nos quedamos con los ultimos 5 bits de L
 	ld c, a                  ; C = Columna
-	ret             ; HL = 010TT000NNNCCCCCb
+	ret             ; HL = 010TT000 FFFCCCCC
 
 ;==================================================
 ; *** E S T A   R U T I N A   N O   S E   U S A **
