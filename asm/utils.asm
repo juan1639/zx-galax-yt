@@ -142,10 +142,10 @@ ret
 
 ;==================================================
 ; 
-;      CHECK SI MARCIANO NOS DISPARA...
+;      CHECK SI MARCIANO NOS DISPARA (NO vale)...
 ; 
 ;--------------------------------------------------
-check_si_marciano_nos_dispara:
+check_si_marciano_nos_dispara_novale:
 	ld	a,(settings)
 	bit	5,a		; Hay un disparo marciano activo??
 	ret	nz		; ... si lo hay retorna
@@ -164,28 +164,6 @@ check_si_marciano_nos_dispara:
 	pop	hl
 	
 	ret	nz	; Retorna si NO estamos debajo
-
-	;------------------------------------
-	; Si estamos justo debajo NOS DISPARA
-	;------------------------------------
-	ld	a,(settings)
-	set	5,a
-	ld	(settings),a
-
-	ld	a,h
-	ld	(disparo_marciano_y),a
-
-	ld	a,l
-	inc	a
-	ld	(disparo_marciano_x),a
-
-	;------------------------------------
-	ld	b,$08
-
-	bucle_disparo_marciano_inicial:
-		ld	(hl),$03	; 0000 0011
-		inc	h
-	djnz	bucle_disparo_marciano_inicial
 ret
 
 ;==================================================
@@ -289,6 +267,83 @@ check_tercio_siguiente:
 		ld	(disparo_marciano_y),a
 
 		ret		; Retornamos SUMANDO tercio
+
+;==================================================
+; 
+;      CHECK SI MARCIANO NOS DISPARA (2)...
+; 
+;--------------------------------------------------
+check_si_marciano_nos_dispara:
+	ld	a,(settings)
+	bit	5,a		; Hay un disparo marciano activo??
+	ret	nz		; ... si lo hay retorna
+
+	push	bc
+	call	get_char_coord_lr
+
+	ld	a,(nave_x)
+	and 	%00011111
+	cp	c
+
+	pop	bc
+
+	ret	nz	; Retorna SI no estamos debajo
+	
+	;------------------------------------
+	; Si estamos justo debajo NOS DISPARA
+	;------------------------------------
+	ld	a,(settings)
+	set	5,a
+	ld	(settings),a
+
+	ld	a,h
+	ld	(disparo_marciano_y),a
+
+	ld	a,l
+	inc	a
+	ld	(disparo_marciano_x),a
+
+	;------------------------------------
+	ld	b,$08
+
+	bucle_disparo_marciano_inicial:
+		ld	(hl),$03	; 0000 0011
+		inc	h
+	djnz	bucle_disparo_marciano_inicial
+ret
+
+;========================================================
+; (RUTINA obtenida DE COMPILER SOFTWARE)
+; 
+; Get_Char_Coordinates_LR(offset)
+; Obtener las coordenadas (c,f) que corresponden a una
+; direccion de memoria de imagen en baja resolucion.
+;
+; Entrada:   HL = Direccion de memoria del caracter (c,f)
+; Salida:    B = FILA, C = COLUMNA
+;--------------------------------------------------------
+get_char_coord_lr:
+	;--------------------------------------------
+	; HL = 010TT000 NNNCCCCCb ->
+	; --> Fila = 000TTNNNb y Columna = 000CCCCCb
+	;--------------------------------------------
+	ld a, h                  ; A = H, para extraer los bits de tercio
+	and %00011000		 ; A = 000TT000b
+	ld b, a                  ; B = A = 000TT000b
+
+	ld a, l                  ; A = L, para extraer los bits de N (FT)
+	and %11100000          	 ; A = A and 11100000b = NNN00000b
+	rlc a                    ; Rotamos A 3 veces a la izquierda
+	rlc a
+	rlc a                    ; A = 00000NNNb
+	or b                     ; A = A or b = 000TTNNNb
+	ld b, a                  ; B = A = 000TTNNNb
+	
+	; ------------ Calculo de la columna --------
+	ld a, l                  ; A = L, para extraer los bits de columna
+	and %00011111            ; Nos quedamos con los ultimos 5 bits de L
+	ld c, a                  ; C = Columna
+	ret             ; HL = 010TT000NNNCCCCCb
 
 ;==================================================
 ; *** E S T A   R U T I N A   N O   S E   U S A **
