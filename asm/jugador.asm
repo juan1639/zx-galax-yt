@@ -5,6 +5,10 @@
 ;---  DE---> Puntero direcciones Sprite ...  				---
 ;==========================================================================
 dibuja_nave:
+	ld	a,(explo_nave_timer)
+	or	a
+	ret	nz
+
 	ld	a,NAVE_Y
 	ld	h,a
 	ld	a,(nave_x)

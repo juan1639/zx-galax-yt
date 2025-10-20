@@ -48,6 +48,7 @@ bucle_principal:
 	call	disparo
 	call	leer_teclado
 	call 	dibuja_nave
+	call	frames_nave_explosion
 	call	disparo_marciano
 	call	mover_marcianos
 	call	frames_explo_marciano
@@ -231,12 +232,15 @@ defb	$4e,$87,128,$47,$68,16,$45,$72,32,$42,$91,64,$55,$0b,8,$57,$2c,32
 ; NAVE_Y esta declarada como constante (porque solo se mueve en horizontal)
 nave_x		defb	$af	; Posicion X de la nave (l de hl)
 
+explo_nave_x	defb	$00	; Posicion X de la explo nave (y es constante)
+explo_nave_timer	defb	$00	; Cuenta atras explosion nuestra nave
+
 ;-----------------------------------------------------------------------------
 disparo_y	defb	$50	; Posicion Y del disparo (h de hl)
 disparo_x	defb	$8f	; Posicion X del disparo (l de hl)
 
 ;-----------------------------------------------------------------------------
-settings	defb	$00	; Bits (flags) de los diferentes estados. Bits utilizados:
+settings	defb	%00000000	; Bits (flags) de los diferentes estados. Bits utilizados:
 
 ; Bit 0 ... 0=Disparo permitido		| 1=Disparo NO permitido (0000 0001)
 ; Bit 1 ... 0=Enemigos a la dcha.	| 1=Enemigos a la izda. 

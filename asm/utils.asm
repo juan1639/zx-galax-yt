@@ -182,16 +182,18 @@ disparo_marciano:
 		cp	$58
 		jr	z, desactivar_disparo_marciano	; FIN del disparo marciano (fin 3er tercio)
 
-		;-----------------------------------------------------------------------
-		; Al final la deteccion de colision la haremos al reves, en la...
-		; ... rutina de los enemigos (para poder identificar al enemigo abatido)
-		;-----------------------------------------------------------------------
-		;push	hl
-		;call	check_impacto_marciano
-		;pop	hl
-		;-----------------------------------------------------------------------
+		;------------------------------------------
+		; Check SI nos impacta el disparo marciano
+		;------------------------------------------
+		push	hl
+		call	check_nos_impactan_vidamenos
+		pop	hl
 
-		;--------------------------------------
+		ld	a,(explo_nave_timer)
+		or	a
+		jr	nz,desactivar_disparo_marciano
+
+		;-----------------------------------------
 		ld	b,$08
 
 		bucle_dibuja_disparo_marciano:
@@ -251,6 +253,7 @@ check_si_marciano_nos_dispara:
 	bit	5,a		; Hay un disparo marciano activo??
 	ret	nz		; ... si lo hay retorna
 
+	;--------------------------
 	push	bc
 	call	get_char_coord_lr
 
@@ -258,13 +261,35 @@ check_si_marciano_nos_dispara:
 	and 	%00011111
 	cp	c
 
+	jr	z, iniciar_disparo_marciano
+	
+	;--------------------------
+	ld	a,(nave_x)
+	dec	a
+	and	%00011111
+	cp	c
+
+	jr	z, iniciar_disparo_marciano
+
+	;--------------------------
+	ld	a,(nave_x)
+	inc	a
+	and	%00011111
+	cp	c
+
+	jr	z, iniciar_disparo_marciano
+
+	;--------------------------
 	pop	bc
 
-	ret	nz	; Retorna SI no estamos debajo
+	ret	; Retorna SI no estamos debajo
 	
 	;------------------------------------
 	; Si estamos justo debajo NOS DISPARA
 	;------------------------------------
+	iniciar_disparo_marciano:
+	pop	bc
+	
 	ld	a,(settings)
 	set	5,a
 	ld	(settings),a
@@ -317,6 +342,127 @@ get_char_coord_lr:
 	and %00011111            ; Nos quedamos con los ultimos 5 bits de L
 	ld c, a                  ; C = Columna
 	ret             ; HL = 010TT000 FFFCCCCC
+
+;==================================================
+; Check SI nos impacta el disparo marciano...
+; ... y vida menos, explosion, etc.
+;--------------------------------------------------
+check_nos_impactan_vidamenos:
+	ld	a,h
+	cp	NAVE_Y
+	ret	nz
+
+	ld	a,(nave_x)
+	cp	l
+
+	jr	z,inicia_nave_explosion
+
+	ld	a,(nave_x)
+	inc	a
+	cp	l
+
+	jr	z,inicia_nave_explosion
+ret
+
+;==================================================
+; Inicia explosion de nuestra nave
+;--------------------------------------------------
+inicia_nave_explosion:
+	ld	a,(nave_x)
+	ld	(explo_nave_x),a
+
+	ld	a,$04			; 4 frames 
+	ld	(explo_nave_timer),a	; Cuenta atras (10 frames)
+ret
+
+;==================================================
+; Rutina de renderizado de la explosion...
+; ... de nuesta nave
+;--------------------------------------------------
+frames_nave_explosion:
+	ld	a,(explo_nave_timer)
+	or	a
+	ret	z	; Retorna si no procede dibujar explosion nave
+
+	;-------------------------------------------
+	; Decrementar cuenta atras (siguiente frame)
+	;-------------------------------------------
+	dec	a
+	ld	(explo_nave_timer),a
+
+	;-------------------------------------------
+	; Seleccionar frame explo a dibujar
+	;-------------------------------------------
+	ld	de,bytes_nave_explosion
+
+	inc	a
+	ld	b,a
+
+	bucle_selecc_frame_explo_nave:
+		call	sumar_de_32
+	djnz	bucle_selecc_frame_explo_nave
+
+	;---------------------------------------
+	; Asignar coor hl para dibujar explosion
+	;---------------------------------------
+	ld	a,NAVE_Y
+	ld	h,a
+
+	ld	a,(explo_nave_x)
+	ld	l,a
+	
+	;--------------------------------------
+	ld	b,$10
+
+	bucle_dibuja_explo_nave:
+		dec	l
+
+		ld	a,0
+		ld	(hl),a
+
+		inc	l
+
+		ld	a,(de)
+		ld	(hl),a
+
+		inc	l
+		inc	de
+
+		ld	a,(de)
+		ld	(hl),a
+
+		inc	l
+
+		ld	a,0
+		ld	(hl),a
+
+		dec	l
+		dec	l
+
+		call	check_next_fila
+
+		inc	de
+		
+		;--------- Sonido explosion nuestra nave --------
+		ld	a,$02
+		call	sonido
+
+	djnz	bucle_dibuja_explo_nave
+ret
+
+;-------------------------------------------------
+; +32 bytes a DE para cambiar de sprite a dibujar
+;-------------------------------------------------
+sumar_de_32:
+	ld	a,e
+	add	a,$20	; Sumar 32 bytes
+	ld	e,a
+	jr	nc,retornar_2
+
+	inc	d
+
+retornar_2:
+	ret
 
 ;==================================================
 ; *** E S T A   R U T I N A   N O   S E   U S A **
