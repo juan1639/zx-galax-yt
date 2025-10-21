@@ -61,7 +61,7 @@ bucle_principal:
 	;halt
 	;halt
 	;halt
-	halt
+	;halt
 	halt			; A mas cantidad de halts... mas lento
 	
 jr	bucle_principal

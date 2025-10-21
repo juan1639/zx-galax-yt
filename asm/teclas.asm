@@ -9,6 +9,10 @@
 ;---    ... un Joystick tipo Cursor-Joystick                             ---   
 ;---------------------------------------------------------------------------
 leer_teclado:
+	ld	a,(explo_nave_timer)
+	or	a
+	ret	nz
+
 	ld	a,$7f		; Carg en A, puerto $7f (Semifila SPC...B)
 	in	a,($fe)		; Lee (in a) el puerto de entrada $fe
 	bit	0,a		; Bit 4 es la tecla 'SPC'
