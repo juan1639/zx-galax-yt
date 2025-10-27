@@ -27,7 +27,19 @@ _AT        	equ $16
 _TAB   		equ $17
 
 ;==========================================================================
-;---			C O M I E N Z O   P R O G R A M A		---
+;---			M E N U   P R I N C I P A L      		---
+;---									---
+;---      		    CLS + ATRIBUTOS GENERALES                   ---
+;--------------------------------------------------------------------------
+call	sub_cls
+call 	sub_cls_attr
+;call	sub_attr_generales
+;call	sub_attr_zonas
+;call	borde
+call	menu_principal
+
+;==========================================================================
+;---			C O M I E N Z O   J U E G O       		---
 ;---									---
 ;---      		    CLS + ATRIBUTOS GENERALES                   ---
 ;--------------------------------------------------------------------------
@@ -272,6 +284,8 @@ num_marcianos	defb	$18	; Numero de marcianos 24 (para checkear nivel superado)
 txt_puntos	defb	_PAPER, $00, _INK, $06, _AT, $00, $01, "Puntos:"
 txt_vidas	defb	_PAPER, $00, _INK, $06, _AT, $00, $14, "Vidas:"
 txt_levelup	defb	_BRIGHT, $01, _FLASH, $01, _PAPER, $00, _INK, $05, _AT, $0c, $08, " L E V E L   U P "
+txt_pulse_continuar	defb	_BRIGHT, $01, _FLASH, $01, _PAPER, $00, _INK, $05, _AT, $11, $03, " Pulse Space para comenzar "
+txt_creditos	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $02, _AT, $15, $08, $7f," Juan Eguia, 2025 "	
 
 num_puntos:
 	defb	$00, $00
@@ -288,6 +302,7 @@ include "enemigos.asm"
 include "utils.asm"
 include "sprites.asm"
 include "explomarciano.asm"
+include "menu_principal.asm"
 
 ;------------------------------------------------------------------------------
 end	$8000
