@@ -33,9 +33,8 @@ _TAB   		equ $17
 ;--------------------------------------------------------------------------
 call	sub_cls
 call 	sub_cls_attr
-;call	sub_attr_generales
-;call	sub_attr_zonas
-;call	borde
+call	sub_attr_zonas
+call	borde
 call	menu_principal
 
 ;==========================================================================
@@ -47,7 +46,7 @@ call	sub_cls
 call 	sub_cls_attr
 call	sub_attr_generales
 call	sub_attr_zonas
-call	borde
+;call	borde
 call	mostrar_marcadores
 
 ;==========================================================================
@@ -65,16 +64,8 @@ bucle_principal:
 	call	mover_marcianos
 	call	frames_explo_marciano
 	call	check_todos_abatidos
-	;halt
-	;halt
-	;halt
-	;halt
-	;halt
-	;halt
-	;halt
-	;halt
-	;halt
-	halt			; A mas cantidad de halts... mas lento
+
+	call	ralentizar_juego_halt
 	
 jr	bucle_principal
 jr	$
@@ -84,6 +75,24 @@ jr	$
 ;=====                        S U B R U T I N A S                      =====
 ;=====                                                                 =====
 ;---------------------------------------------------------------------------
+;===========================================================================
+;		A mas cantidad de halts... mas lento
+;---------------------------------------------------------------------------
+ralentizar_juego_halt:
+	ld	a,(elegir_vel)
+	halt
+	dec	a
+	ret	z
+
+	halt
+	dec	a
+	ret	z
+
+	halt
+	dec	a
+	ret	z
+ret
+
 ;===========================================================================
 ;---                    S U B - ATRIBUTOS POR ZONAS                      ---
 ;---------------------------------------------------------------------------
@@ -262,6 +271,13 @@ settings	defb	%00000000	; Bits (flags) de los diferentes estados. Bits utilizado
 ; Bit 5 ... 0=Marciano atacando OFF	| 1=Marciano atacando ON
 
 ;----------------------------------------------------------------------------
+; 	1 = Turbo
+; 	2 = Rapido
+; 	3 = Normal
+;----------------------------------------------------------------------------
+elegir_vel	defb	$03	; Velocidad del juego (default 3 normal)
+
+;----------------------------------------------------------------------------
 marciano_y	defb	$40	; CoorY del marciano (h de hl)
 marciano_x	defb	$40	; CoorX del marciano (l de hl)
 rota_marciano	defb	$01	; Rotacion actual del marciano
@@ -284,8 +300,16 @@ num_marcianos	defb	$18	; Numero de marcianos 24 (para checkear nivel superado)
 txt_puntos	defb	_PAPER, $00, _INK, $06, _AT, $00, $01, "Puntos:"
 txt_vidas	defb	_PAPER, $00, _INK, $06, _AT, $00, $14, "Vidas:"
 txt_levelup	defb	_BRIGHT, $01, _FLASH, $01, _PAPER, $00, _INK, $05, _AT, $0c, $08, " L E V E L   U P "
+
 txt_pulse_continuar	defb	_BRIGHT, $01, _FLASH, $01, _PAPER, $00, _INK, $05, _AT, $11, $03, " Pulse Space para comenzar "
-txt_creditos	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $02, _AT, $15, $08, $7f," Juan Eguia, 2025 "	
+txt_creditos	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $02, _AT, $15, $08, $7f," Juan Eguia, 2025 "
+
+txt_titulo	defb 	_BRIGHT, $01, _FLASH, $00, _PAPER, $00, _INK, $04, _AT, $02, $0b, " Galax Jon "
+txt_v		defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $08, $07, "V"
+txt_velocidad	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $07, _AT, $08, $08, "elocidad del juego"
+txt_vel_normal	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $0a, $0d, "Normal"
+txt_vel_rapido	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $0a, $0d, "Rapido"
+txt_vel_turbo	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $0a, $0d, "Turbo "	
 
 num_puntos:
 	defb	$00, $00

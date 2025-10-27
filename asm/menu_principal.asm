@@ -8,19 +8,22 @@ menu_principal:
 	;call	inicia_estrella
 
 menu_principal2:
-	;call	espacio		; SUB Scroll espacial estrellas
-	;call	estrella	; SUB Animacion Estrella
-	;call	attr_mp
-	;call 	galax_jon
-	call 	pulse_continuar
+	call	espacio		; SUB Scroll espacial estrellas
+
+	call	titulo
+	call	velocidad_juego
 	call	creditos
+	call 	pulse_continuar
+
+	push	bc
 
 	ld	c,$01		; C=1... NO pulsada ... (continua en bucle MP)
 	call	teclado_mp	; Leer Teclado para avanzar...
 	ld	a,c
+
+	pop	bc
 	ret	z		; Retorna si C=0
 	
-	halt
 	halt
 	jr	menu_principal2		; bucle Menu Principal
 
@@ -34,41 +37,61 @@ ret		; No hace falta
 teclado_mp:
 	ld	a,$7f			; Carg en A, puerto $7f (semifila SPC...B)
 	in	a,($fe)			; Lee (In A) el puerto entrada $fe
-	bit	0,a			; Comprobamos estado del Bit4 (Tecla 5)
+	bit	0,a			; Comprobamos estado del Bit0 (Tecla Space)
 	jr 	nz,tecla_mp2		; NZ = '0' No pulsada, salta a la siguiente...
 	jr	comenzar_ajugar
 
 tecla_mp2:
-	ld	a,$ef			;Carg en A, puerto $ef (semifila 6...0)
-	in	a,($fe)			;Lee (In A) el puerto entrada $fe
-	bit	4,a			;Comprobamos estado del Bit4 (Tecla '6')
-	jr 	nz,tecla_mp3		;NZ = '6' No pulsada, salta a la siguiente...
-	jr	comenzar_ajugar
+	ld	a,$fe			; Carga en A, puerto $ef (semifila CAPS...V)
+	in	a,($fe)			; Lee (In A) el puerto entrada $fe
+	bit	4,a			; Comprobamos estado del Bit2 (Tecla V)
+	ret 	nz			; NZ = 'V' No pulsada, Retorna ...
 
-tecla_mp3:
-	ld	a,$ef			;Carg en A, puerto $ef (semifila 6...0)
-	in	a,($fe)			;Lee (In A) el puerto entrada $fe
-	bit	3,a			;Comprobamos estado del Bit3 (Tecla 7)
-	jr 	nz,tecla_mp4		;NZ = '7' No pulsada, salta a la siguiente...
-	jr	comenzar_ajugar
+cambiar_vel:
+	ld	a,$04
+	call	sonido
 
-tecla_mp4:
-	ld	a,$ef			;Carg en A, puerto $ef (semifila 6...0)
-	in	a,($fe)			;Lee (In A) el puerto entrada $fe
-	bit	2,a			;Comprobamos estado del Bit2 (Tecla 8)
-	ret 	nz			;NZ = '8' No pulsada, Retorna ...
+	ld	a,$02
+	call	sonido
+
+	ld	a,(elegir_vel)
+	dec	a
+	ld	(elegir_vel),a
+
+	or	a
+	call	z,hacer_loop
+
+	halt
+	halt
+	halt
+
+	ret
 
 comenzar_ajugar:
 	ld	a,$04
 	call	sonido
 	ld	c,$00			; C=0 ... Pulsada! Salir del Menu Principal
-	;call	sub_cls
-	;call	sub_clsattr
-	
+
+	halt
+	halt
+	halt
+	halt
+	halt
+	halt
+	halt
+	halt	
+ret
+
+;----------------------------------------------------
+hacer_loop:
+	inc	a
+	inc	a
+	inc	a
+	ld	(elegir_vel),a
 ret
 
 ;---------------------------------------------------------------------------
-;---                		Pulse Continuar...                       ---
+;---                      Texto Pulse Continuar...                       ---
 ;---------------------------------------------------------------------------
 pulse_continuar:
 	push	de
@@ -84,7 +107,7 @@ pulse_continuar:
 ret
 
 ;---------------------------------------------------------------------------
-;---                		     Creditos                            ---
+;---                	       Texto Creditos                            ---
 ;---------------------------------------------------------------------------
 creditos:
 	push	de
@@ -99,4 +122,68 @@ creditos:
 	pop 	de
 ret
 
+;---------------------------------------------------------------------------
+;---                	       Texto Titulo                              ---
+;---------------------------------------------------------------------------
+titulo:
+	push	de
+	push	bc
+	
+	ld	de,txt_titulo
+	ld	bc,$18
+
+	call	pr_string
+
+	pop	bc
+	pop 	de
+ret
+
+;---------------------------------------------------------------------------
+;---                	Texto Velocidad del Juego                        ---
+;---------------------------------------------------------------------------
+velocidad_juego:
+	push	de
+	push	bc
+	
+	ld	de,txt_v
+	ld	bc,$0c
+
+	call	pr_string
+
+	ld	de,txt_velocidad
+	ld	bc,$1d
+
+	call	pr_string
+
+	;----------------------------------
+	ld	a,(elegir_vel)
+	cp	$03
+	call	z,cambiar_txt_a_vel_normal
+	cp	$02
+	call	z,cambiar_txt_a_vel_rapido
+	cp	$01
+	call	z,cambiar_txt_a_vel_turbo
+
+	ld	bc,$11
+	call	pr_string
+	;---------------------------------
+
+	pop	bc
+	pop 	de
+ret
+
+;---------------------------------------------------
+cambiar_txt_a_vel_normal:
+	ld	de,txt_vel_normal
+ret
+
+;---------------------------------------------------
+cambiar_txt_a_vel_rapido:
+	ld	de,txt_vel_rapido
+ret
+
+;---------------------------------------------------
+cambiar_txt_a_vel_turbo:
+	ld	de,txt_vel_turbo
+ret
 
