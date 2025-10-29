@@ -5,8 +5,12 @@
 ;---  DE---> Puntero direcciones Sprite ...  				---
 ;==========================================================================
 dibuja_nave:
+	ld	a,(settings)
+	bit	4,a		; Check SI estamos en Game Over
+	ret	nz
+
 	ld	a,(explo_nave_timer)
-	or	a
+	or	a		; Check SI la nave esta explotando
 	ret	nz
 
 	ld	a,NAVE_Y

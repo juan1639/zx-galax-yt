@@ -250,6 +250,10 @@ check_tercio_siguiente:
 ;--------------------------------------------------
 check_si_marciano_nos_dispara:
 	ld	a,(settings)
+	bit	4,a		; Check SI estamos en Game Over
+	ret	nz		; Retorna si es asi
+
+	ld	a,(settings)
 	bit	5,a		; Hay un disparo marciano activo??
 	ret	nz		; ... si lo hay retorna
 
@@ -368,11 +372,35 @@ ret
 ; Inicia explosion de nuestra nave
 ;--------------------------------------------------
 inicia_nave_explosion:
+	ld	a,(num_vidas)
+	dec	a
+	ld	(num_vidas),a
+
+	push	de
+	push	bc
+	call	mostrar_marcadores
+	pop	bc
+	pop 	de
+
+	ld	a,(num_vidas)
+	inc	a
+	call	z,setear_bit_gameover
+
+	;----------------------------------
 	ld	a,(nave_x)
 	ld	(explo_nave_x),a
 
 	ld	a,$04			; 4 frames 
 	ld	(explo_nave_timer),a	; Cuenta atras (10 frames)
+ret
+
+;==================================================
+; 'Setear' el bit de Game Over (bit 4 de Settings)
+;--------------------------------------------------
+setear_bit_gameover:
+	ld	a,(settings)
+	set	4,a
+	ld	(settings),a
 ret
 
 ;==================================================

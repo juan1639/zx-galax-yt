@@ -9,8 +9,12 @@
 ;---    ... un Joystick tipo Cursor-Joystick                             ---   
 ;---------------------------------------------------------------------------
 leer_teclado:
+	ld	a,(settings)
+	bit	4,a		; Check SI estamos en Game over
+	ret	nz
+
 	ld	a,(explo_nave_timer)
-	or	a
+	or	a			; Check si estamos explotando
 	ret	nz
 
 	ld	a,$7f		; Carg en A, puerto $7f (Semifila SPC...B)

@@ -64,6 +64,7 @@ bucle_principal:
 	call	mover_marcianos
 	call	frames_explo_marciano
 	call	check_todos_abatidos
+	call	check_estado_gameover
 
 	call	ralentizar_juego_halt
 	
@@ -205,7 +206,7 @@ ret
 ;--------------------------------------------------------------------------
 mostrar_marcadores:
 	ld	de,txt_puntos
-	ld	bc,$0e
+	ld	bc,$12
 
 	call	pr_string
 
@@ -220,7 +221,7 @@ mostrar_marcadores:
 
 	;--------------------------
 	ld	de,txt_vidas
-	ld	bc,$0d
+	ld	bc,$11
 
 	call	pr_string
 
@@ -228,9 +229,46 @@ mostrar_marcadores:
 	ld	b,$00
 
 	ld	a,(num_vidas)
+	cp	$ff
+	call	z,vidas_top_zero
+
 	ld	c,a
 
 	call	out_num
+ret
+
+;----------------------------------
+vidas_top_zero:
+	xor	a
+ret
+
+;=============================================================================
+;---		           CHECK si GAME OVER (Vidas 0)                    ---
+;-----------------------------------------------------------------------------
+check_estado_gameover:
+	ld	a,(settings)
+	bit	4,a
+	ret	z
+
+	;-------------------------
+	ld	de,txt_gameover
+	ld	bc,$18
+
+	call	pr_string
+
+	;-------------------------
+	ld	de,txt_rejugar
+	ld	bc,$1d
+
+	call	pr_string
+
+	;-------------------------
+	; Otra Partida?
+	;-------------------------
+	ld	a,$fd		; Carg en A, puerto $fd (Semifila A...G)
+	in	a,($fe)		; Lee (in a) el puerto de entrada $fe
+	bit	1,a		; Bit 4 es la tecla 'S'
+	jr	z,$	
 ret
 
 ;=============================================================================
@@ -267,7 +305,7 @@ settings	defb	%00000000	; Bits (flags) de los diferentes estados. Bits utilizado
 ; Bit 1 ... 0=Enemigos a la dcha.	| 1=Enemigos a la izda. 
 ; Bit 2 ... 0=marciano abatido OFF	| 1=Marciano abatido ON
 ; Bit 3 ... 0=Nivel NO superado		| 1=Nivel SUPERADO
-; Bit 4 ...
+; Bit 4 ... 0=Game Over OFF		| 1=Game Over ON
 ; Bit 5 ... 0=Marciano atacando OFF	| 1=Marciano atacando ON
 
 ;----------------------------------------------------------------------------
@@ -297,19 +335,22 @@ defb	0	; Hay uno de mas, para que cuadre al ser b y bc regresivos
 num_marcianos	defb	$18	; Numero de marcianos 24 (para checkear nivel superado)
 
 ;-----------------------------------------------------------------------------
-txt_puntos	defb	_PAPER, $00, _INK, $06, _AT, $00, $01, "Puntos:"
-txt_vidas	defb	_PAPER, $00, _INK, $06, _AT, $00, $14, "Vidas:"
+txt_puntos	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $00, $01, "Puntos:"
+txt_vidas	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $00, $14, "Vidas:"
 txt_levelup	defb	_BRIGHT, $01, _FLASH, $01, _PAPER, $00, _INK, $05, _AT, $0c, $08, " L E V E L   U P "
 
 txt_pulse_continuar	defb	_BRIGHT, $01, _FLASH, $01, _PAPER, $00, _INK, $05, _AT, $11, $03, " Pulse Space para comenzar "
 txt_creditos	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $02, _AT, $15, $08, $7f," Juan Eguia, 2025 "
 
-txt_titulo	defb 	_BRIGHT, $01, _FLASH, $00, _PAPER, $00, _INK, $04, _AT, $02, $0b, " Galax Jon "
+txt_titulo	defb 	_BRIGHT, $00, _FLASH, $00, _PAPER, $06, _INK, $01, _AT, $02, $0b, " Galax Jon "
 txt_v		defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $08, $07, "V"
 txt_velocidad	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $07, _AT, $08, $08, "elocidad del juego"
 txt_vel_normal	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $0a, $0d, "Normal"
 txt_vel_rapido	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $0a, $0d, "Rapido"
-txt_vel_turbo	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $0a, $0d, "Turbo "	
+txt_vel_turbo	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $0a, $0d, "Turbo "
+
+txt_gameover	defb	_BRIGHT, $01, _FLASH, $01, _PAPER, $00, _INK, $02, _AT, $0c, $0b, " Game Over "		
+txt_rejugar	defb	_BRIGHT, $01, _FLASH, $00, _PAPER, $00, _INK, $07, _AT, $0f, $07, " Otra partida? S/N "
 
 num_puntos:
 	defb	$00, $00
