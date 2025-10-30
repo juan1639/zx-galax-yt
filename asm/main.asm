@@ -7,6 +7,8 @@ NAVE_Y		equ	$50
 LIMITE_IZ	equ	$a0
 LIMITE_DE	equ	$be
 
+NUMERO_MARCIANOS	equ	$18	; 24 marcianos fijos
+
 beeper		equ	$03b5	; Rutina del sistema Beeper (hl=nota | de=duracion)
 				; Altera registros hl,de,bc,af,ix
 
@@ -31,6 +33,11 @@ _TAB   		equ $17
 ;---									---
 ;---      		    CLS + ATRIBUTOS GENERALES                   ---
 ;--------------------------------------------------------------------------
+nueva_partida:
+ld	a,(settings)
+res	6,a		; Resetear el flag rejugar nueva partida
+ld	(settings),a
+
 call	sub_cls
 call 	sub_cls_attr
 call	sub_attr_zonas
@@ -65,6 +72,10 @@ bucle_principal:
 	call	frames_explo_marciano
 	call	check_todos_abatidos
 	call	check_estado_gameover
+	
+	ld	a,(settings)
+	bit	6,a
+	jp	nz, nueva_partida	; JP *** SALTO ABSOLUTO ***
 
 	call	ralentizar_juego_halt
 	
@@ -268,7 +279,42 @@ check_estado_gameover:
 	ld	a,$fd		; Carg en A, puerto $fd (Semifila A...G)
 	in	a,($fe)		; Lee (in a) el puerto de entrada $fe
 	bit	1,a		; Bit 4 es la tecla 'S'
-	jr	z,$	
+	call	z,resetar_valores_nuevapartida
+ret
+
+;-----------------------------------------------------------
+resetar_valores_nuevapartida:
+	xor	a
+	ld	(settings),a
+
+	ld	de,num_puntos
+	ld	(de),a
+	inc	de
+	ld	(de),a
+
+	ld	a,$03
+	ld	(num_vidas),a
+
+	ld	de,marciano_abatido
+
+	ld	a,NUMERO_MARCIANOS
+	ld	(num_marcianos),a
+	ld	a,(num_marcianos)
+
+	ld	b,a
+
+	bucle_reset_marcianos_abatidos:
+		xor	a
+		ld	(de),a
+		inc	de
+	djnz	bucle_reset_marcianos_abatidos
+
+	ld	(de),a
+
+	;-------------------------------------
+	ld	a,(settings)
+	set	6,a		; 'Setear' flag rejugar nueva partida
+	ld	(settings),a
 ret
 
 ;=============================================================================
@@ -307,6 +353,7 @@ settings	defb	%00000000	; Bits (flags) de los diferentes estados. Bits utilizado
 ; Bit 3 ... 0=Nivel NO superado		| 1=Nivel SUPERADO
 ; Bit 4 ... 0=Game Over OFF		| 1=Game Over ON
 ; Bit 5 ... 0=Marciano atacando OFF	| 1=Marciano atacando ON
+; Bit 6 ... 0=Rejugar OFF		| 1=Rejugar ON
 
 ;----------------------------------------------------------------------------
 ; 	1 = Turbo
@@ -332,7 +379,7 @@ marciano_abatido:
 defb	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 defb	0	; Hay uno de mas, para que cuadre al ser b y bc regresivos
 
-num_marcianos	defb	$18	; Numero de marcianos 24 (para checkear nivel superado)
+num_marcianos	defb	NUMERO_MARCIANOS	; Num de marcianos 24 (pa checkear nivel superado)
 
 ;-----------------------------------------------------------------------------
 txt_puntos	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $00, $01, "Puntos:"
