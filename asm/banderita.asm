@@ -40,12 +40,12 @@ dibujar_banderita:
 		push	hl
 
 		ld	h,$5a
-		ld	a,%01000111
-		ld	(hl),a
+		ld	a,%01000111	; Color blanco grisaceo
+		ld	(hl),a		; (palo banderita)
 
 		inc	l
-		ld	a,%01000010
-		ld	(hl),a	
+		ld	a,%01000010	; Color Rojo brillante
+		ld	(hl),a		; (banderita)
 		
 		pop	hl
 

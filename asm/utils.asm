@@ -141,7 +141,7 @@ restar_marciano:
 	ret	nz
 
 	ld	a,(settings)
-	set	3,a
+	set	3,a		; 'Setear' el flag de Nivel Superado
 	ld	(settings),a
 ret
 

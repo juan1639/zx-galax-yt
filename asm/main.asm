@@ -77,7 +77,7 @@ bucle_principal:
 	
 	ld	a,(settings)
 	bit	7,a
-	jp	nz, nuevo_nivel	; JP *** SALTO ABSOLUTO ***
+	jr	nz, nuevo_nivel	; JP *** SALTO ABSOLUTO ***
 
 	call	ralentizar_juego_halt
 	
@@ -306,8 +306,8 @@ resetar_valores_nuevo_nivel:
 	ld	b,$18
 
 	bucle_reset_marcianos_abatidos:
-		ld	a,$00
-		ld	(de),a
+		ld	a,$00		; Ponemos a 0 todos los marcianos...
+		ld	(de),a		; ...(para que se dibujen otra vez)
 		inc	de
 	djnz	bucle_reset_marcianos_abatidos
 
@@ -319,7 +319,7 @@ resetar_valores_nuevo_nivel:
 	ld	(nivel),a
 
 	ld	a,(settings)
-	set	7,a
+	set	7,a		; Reseteo al nuevo nivel
 	ld	(settings),a
 ret
 
