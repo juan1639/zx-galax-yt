@@ -137,6 +137,12 @@ restar_marciano:
 	ld	a,(num_marcianos)
 	dec	a
 	ld	(num_marcianos),a
+
+	ret	nz
+
+	ld	a,(settings)
+	set	3,a
+	ld	(settings),a
 ret
 
 ;==================================================

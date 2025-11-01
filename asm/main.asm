@@ -33,11 +33,6 @@ _TAB   		equ $17
 ;---									---
 ;---      		    CLS + ATRIBUTOS GENERALES                   ---
 ;--------------------------------------------------------------------------
-nueva_partida:
-ld	a,(settings)
-res	6,a		; Resetear el flag rejugar nueva partida
-ld	(settings),a
-
 call	sub_cls
 call 	sub_cls_attr
 call	sub_attr_zonas
@@ -49,6 +44,12 @@ call	menu_principal
 ;---									---
 ;---      		    CLS + ATRIBUTOS GENERALES                   ---
 ;--------------------------------------------------------------------------
+nuevo_nivel:
+ld	a,(settings)
+res	3,a		; Resetear el flag nivel superado
+res	7,a		; Resetear el flag rejugar nuevo nivel
+ld	(settings),a
+
 call	sub_cls
 call 	sub_cls_attr
 call	sub_attr_generales
@@ -70,12 +71,13 @@ bucle_principal:
 	call	disparo_marciano
 	call	mover_marcianos
 	call	frames_explo_marciano
+	call	dibujar_banderita
 	call	check_todos_abatidos
 	call	check_estado_gameover
 	
 	ld	a,(settings)
-	bit	6,a
-	jp	nz, nueva_partida	; JP *** SALTO ABSOLUTO ***
+	bit	7,a
+	jp	nz, nuevo_nivel	; JP *** SALTO ABSOLUTO ***
 
 	call	ralentizar_juego_halt
 	
@@ -92,7 +94,7 @@ jr	$
 ;---------------------------------------------------------------------------
 ralentizar_juego_halt:
 	ld	a,(elegir_vel)
-	halt
+	;halt
 	dec	a
 	ret	z
 
@@ -202,14 +204,24 @@ ret
 ;         	   SUB -  CHECK TODOS ABATIDOS
 ;--------------------------------------------------------------------------
 check_todos_abatidos:
-	ld	a,(num_marcianos)
-	or	a
-	ret	nz
+	ld	a,(settings)
+	bit	3,a
+	ret	z
 
+	;-----------------------
 	ld	de,txt_levelup
 	ld	bc,$1c
 	call	pr_string
-	jr	$
+
+	ld	de,txt_pulse_c
+	ld	bc,$25
+	call	pr_string
+
+	ld	a,$fe		; Carg en A, puerto $fd (Semifila CAPS...V)
+	in	a,($fe)		; Lee (in a) el puerto de entrada $fe
+	bit	3,a		; Bit 4 es la tecla 'C'
+	call	z,resetar_valores_nuevo_nivel
+	;jr	$
 ret
 
 ;==========================================================================
@@ -279,32 +291,22 @@ check_estado_gameover:
 	ld	a,$fd		; Carg en A, puerto $fd (Semifila A...G)
 	in	a,($fe)		; Lee (in a) el puerto de entrada $fe
 	bit	1,a		; Bit 4 es la tecla 'S'
-	call	z,resetar_valores_nuevapartida
+	jr	z,$
+	;call	z,resetar_valores_nuevapartida
 ret
 
 ;-----------------------------------------------------------
-resetar_valores_nuevapartida:
-	xor	a
-	ld	(settings),a
-
-	ld	de,num_puntos
-	ld	(de),a
-	inc	de
-	ld	(de),a
-
-	ld	a,$03
-	ld	(num_vidas),a
-
+resetar_valores_nuevo_nivel:
 	ld	de,marciano_abatido
 
-	ld	a,NUMERO_MARCIANOS
+	ld	a,$18
 	ld	(num_marcianos),a
 	ld	a,(num_marcianos)
 
-	ld	b,a
+	ld	b,$18
 
 	bucle_reset_marcianos_abatidos:
-		xor	a
+		ld	a,$00
 		ld	(de),a
 		inc	de
 	djnz	bucle_reset_marcianos_abatidos
@@ -312,8 +314,12 @@ resetar_valores_nuevapartida:
 	ld	(de),a
 
 	;-------------------------------------
+	ld	a,(nivel)
+	inc	a
+	ld	(nivel),a
+
 	ld	a,(settings)
-	set	6,a		; 'Setear' flag rejugar nueva partida
+	set	7,a
 	ld	(settings),a
 ret
 
@@ -354,6 +360,7 @@ settings	defb	%00000000	; Bits (flags) de los diferentes estados. Bits utilizado
 ; Bit 4 ... 0=Game Over OFF		| 1=Game Over ON
 ; Bit 5 ... 0=Marciano atacando OFF	| 1=Marciano atacando ON
 ; Bit 6 ... 0=Rejugar OFF		| 1=Rejugar ON
+; Bit 7 ... 0=Reset Nuevo Nivel OFF	| 1=Reset Nuevo Nivel ON
 
 ;----------------------------------------------------------------------------
 ; 	1 = Turbo
@@ -398,11 +405,13 @@ txt_vel_turbo	defb	_BRIGHT, $00, _FLASH, $00, _PAPER, $00, _INK, $06, _AT, $0a, 
 
 txt_gameover	defb	_BRIGHT, $01, _FLASH, $01, _PAPER, $00, _INK, $02, _AT, $0c, $0b, " Game Over "		
 txt_rejugar	defb	_BRIGHT, $01, _FLASH, $00, _PAPER, $00, _INK, $07, _AT, $0f, $07, " Otra partida? S/N "
+txt_pulse_c	defb	_BRIGHT, $01, _FLASH, $00, _PAPER, $00, _INK, $07, _AT, $0f, $04, " Pulse C para nuevo nivel "
 
 num_puntos:
 	defb	$00, $00
 
 num_vidas	defb	$03	; numero de vidas
+nivel		defb	$01	; nivel (banderita)
 
 ;==============================================================================
 include "sonido.asm"
@@ -415,6 +424,7 @@ include "utils.asm"
 include "sprites.asm"
 include "explomarciano.asm"
 include "menu_principal.asm"
+include "banderita.asm"
 
 ;------------------------------------------------------------------------------
 end	$8000

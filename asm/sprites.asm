@@ -200,4 +200,9 @@ bytes_explo_marciano:
 	DEFB	  8,  0,  0, 34,  0,  0,  0,  0
 	DEFB	  4,  4,  4
 
+banderita:
+	DEFB	  1,224,  1,252,  1,255,  1,252
+	DEFB	  1,224,  1,  0,  1,  0,  1,  0
+	DEFB	 56, 56
+
 
